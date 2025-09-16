@@ -1,8 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { initializeAuth } from "firebase/auth";
-import { getReactNativePersistence } from "firebase/auth/react-native";
-
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD63ghthHRxYwTvnhuoJbyoNmtx1B5iSVs",
@@ -11,14 +8,13 @@ const firebaseConfig = {
   storageBucket: "nutritakes-ccd71.appspot.com",
   messagingSenderId: "52216623493",
   appId: "1:52216623493:web:2b16051c570dc09a0714ec",
-  measurementId: "G-RLL1D12DJ7"
+  measurementId: "G-RLL1D12DJ7",
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// !! Expo managed workflow,.
+const auth = getAuth(app);
 
 export { app, auth };
 
