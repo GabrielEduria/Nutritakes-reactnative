@@ -2,101 +2,126 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
 import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import React, { useState } from "react";
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { auth } from "../../Lib/firebase";
+import ErrorModal from "../components/ErrorModal";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleRegister = async () => {
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+    // --- Client-side validation ---
+    if (!email.trim()) {
+      setErrorMessage("Email is required.");
+      setModalVisible(true);
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setErrorMessage("Please enter a valid email address.");
+      setModalVisible(true);
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage("Password is required.");
+      setModalVisible(true);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      setModalVisible(true);
+      return;
+    }
+
+    // --- Firebase registration ---
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Send verification email
       await sendEmailVerification(user);
 
-      Alert.alert(
-        "Verify Your Email",
+      setErrorMessage(
         "A verification email has been sent. Please check your inbox before logging in."
       );
+      setModalVisible(true);
 
-      // Optionally, clear the form
+      // Clear input fields
       setEmail("");
       setPassword("");
       setConfirmPassword("");
     } catch (error: any) {
       console.error("❌ Register error:", error.message);
-      Alert.alert("Registration Failed", error.message);
+      setErrorMessage(error.message);
+      setModalVisible(true);
     }
   };
 
   return (
-    <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.container}>
-      <View style={styles.inner}>
-        <Image
-          source={require("@/assets/images/icon/NT.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+    <>
+      <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.container}>
+        <View style={styles.inner}>
+          <Image
+            source={require("@/assets/images/icon/NT.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
 
-        <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.title}>Create Account</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#777"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#777"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#777"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#777"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          placeholderTextColor="#777"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            placeholderTextColor="#777"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Register</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleRegister}>
+            <Text style={styles.buttonText}>Register</Text>
+          </TouchableOpacity>
 
-        <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>Already have an account? </Text>
-          <Link href="/(auth)/LoginScreen" style={styles.loginLink}>
-            Login here
-          </Link>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
+            <Link href="/(auth)/LoginScreen" style={styles.loginLink}>
+              Login here
+            </Link>
+          </View>
         </View>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+
+      <ErrorModal
+        visible={modalVisible}
+        message={errorMessage}
+        onClose={() => setModalVisible(false)}
+      />
+    </>
   );
 }
 

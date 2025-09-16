@@ -1,5 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -12,18 +12,43 @@ export default function LoginScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const router = useRouter();
+
   const handleLogin = async () => {
+    if (!email.trim()) {
+      setErrorMessage("Email is required.");
+      setModalVisible(true);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setErrorMessage("Please enter a valid email address.");
+      setModalVisible(true);
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage("Password is required.");
+      setModalVisible(true);
+      return;
+    }
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       if (!user.emailVerified) {
-        setErrorMessage("Please verify your email first. Check your inbox or spam folder.");
+        setErrorMessage(
+          "Please verify your email first. Check your inbox or spam folder."
+        );
         setModalVisible(true);
         return;
       }
 
-      console.log("✅ Logged in:", user.email);
+      console.log("Successfully Logged in:", user.email);
+
+      router.replace("/screens/AppLayout");
     } catch (error: any) {
       setErrorMessage(error.message);
       setModalVisible(true);
@@ -34,7 +59,11 @@ export default function LoginScreen() {
     <>
       <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.container}>
         <View style={styles.inner}>
-          <Image source={require("@/assets/images/icon/NT.png")} style={styles.logo} resizeMode="contain" />
+          <Image
+            source={require("@/assets/images/icon/NT.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
 
           <Text style={styles.title}>NutriTakes Login</Text>
 
@@ -70,7 +99,11 @@ export default function LoginScreen() {
         </View>
       </LinearGradient>
 
-      <ErrorModal visible={modalVisible} message={errorMessage} onClose={() => setModalVisible(false)} />
+      <ErrorModal
+        visible={modalVisible}
+        message={errorMessage}
+        onClose={() => setModalVisible(false)}
+      />
     </>
   );
 }
@@ -91,7 +124,16 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#000000",
   },
-  button: { width: "100%", height: 60, backgroundColor: "#FF5C00", borderRadius: 12, justifyContent: "center", alignItems: "center", marginTop: 10, elevation: 3 },
+  button: {
+    width: "100%",
+    height: 60,
+    backgroundColor: "#FF5C00",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    elevation: 3,
+  },
   buttonText: { fontSize: 20, fontWeight: "600", color: "#fff" },
   registerContainer: { flexDirection: "row", marginTop: 20 },
   registerText: { fontSize: 16, color: "#333" },
