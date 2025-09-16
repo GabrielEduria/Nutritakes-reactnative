@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 20,
     fontSize: 18,
-    borderWidth: 0.5,
-    borderColor: "#000000",
+    borderWidth: 1,
+    borderColor: "#808080",
   },
   button: {
     width: "100%",
