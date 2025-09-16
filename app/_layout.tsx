@@ -5,13 +5,15 @@ import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import SplashScreen from "./screens/SplashScreen";
+import SplashScreen from "./SplashScreen";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [showSplash, setShowSplash] = useState(true);
 
-  // Show splash screen for 3 seconds
+  // Firebase Auth later
+  const [user, setUser] = useState(null);
+
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 3000);
     return () => clearTimeout(timer);
@@ -24,8 +26,11 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
+        {user ? (
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        ) : (
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        )}
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { initializeAuth } from "firebase/auth";
-// eslint-disable-next-line import/no-unresolved
 import { getReactNativePersistence } from "firebase/auth/react-native";
 
 const firebaseConfig = {
