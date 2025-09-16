@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import React, { useState } from "react";
 import {
   Alert,
@@ -25,13 +25,21 @@ export default function RegisterScreen() {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Send verification email
+      await sendEmailVerification(user);
+
+      Alert.alert(
+        "Verify Your Email",
+        "A verification email has been sent. Please check your inbox before logging in."
       );
-      console.log("✅ Registered:", userCredential.user);
-      Alert.alert("Success", "Account created successfully!");
+
+      // Optionally, clear the form
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
     } catch (error: any) {
       console.error("❌ Register error:", error.message);
       Alert.alert("Registration Failed", error.message);
@@ -39,10 +47,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={["#FFFDD0", "#FFD580", "#FFB347"]}
-      style={styles.container}
-    >
+    <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.container}>
       <View style={styles.inner}>
         <Image
           source={require("@/assets/images/icon/NT.png")}
@@ -84,7 +89,6 @@ export default function RegisterScreen() {
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
 
-        {/* Back to Login link */}
         <View style={styles.loginContainer}>
           <Text style={styles.loginText}>Already have an account? </Text>
           <Link href="/(auth)/LoginScreen" style={styles.loginLink}>
@@ -97,26 +101,10 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  inner: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    marginBottom: 30,
-    color: "#333",
-  },
+  container: { flex: 1 },
+  inner: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
+  logo: { width: 120, height: 120, marginBottom: 20 },
+  title: { fontSize: 26, fontWeight: "700", marginBottom: 30, color: "#0d0d0d" },
   input: {
     width: "100%",
     height: 55,
@@ -125,8 +113,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 15,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    borderWidth: 0.5,
+    borderColor: "#000000",
   },
   button: {
     width: "100%",
@@ -138,22 +126,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
     elevation: 3,
   },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#fff",
-  },
-  loginContainer: {
-    flexDirection: "row",
-    marginTop: 20,
-  },
-  loginText: {
-    fontSize: 15,
-    color: "#333",
-  },
-  loginLink: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#FF5C00",
-  },
+  buttonText: { fontSize: 18, fontWeight: "600", color: "#fff" },
+  loginContainer: { flexDirection: "row", marginTop: 20 },
+  loginText: { fontSize: 15, color: "#333" },
+  loginLink: { fontSize: 15, fontWeight: "600", color: "#FF5C00" },
 });

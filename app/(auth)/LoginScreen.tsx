@@ -2,106 +2,84 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { auth } from "../../Lib/firebase";
+import ErrorModal from "../components/ErrorModal";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleLogin = async () => {
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      console.log("✅ Logged in:", userCredential.user);
-      Alert.alert("Success", "Logged in successfully!");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (!user.emailVerified) {
+        setErrorMessage("Please verify your email first. Check your inbox or spam folder.");
+        setModalVisible(true);
+        return;
+      }
+
+      console.log("✅ Logged in:", user.email);
     } catch (error: any) {
-      console.error("❌ Login error:", error.message);
-      Alert.alert("Login Failed", error.message);
+      setErrorMessage(error.message);
+      setModalVisible(true);
     }
   };
 
   return (
-    <LinearGradient
-      colors={["#FFFDD0", "#FFD580", "#FFB347"]}
-      style={styles.container}
-    >
-      <View style={styles.inner}>
-        <Image
-          source={require("@/assets/images/icon/NT.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+    <>
+      <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.container}>
+        <View style={styles.inner}>
+          <Image source={require("@/assets/images/icon/NT.png")} style={styles.logo} resizeMode="contain" />
 
-        <Text style={styles.title}>NutriTakes Login</Text>
+          <Text style={styles.title}>NutriTakes Login</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#777"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#777"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#777"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#777"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
 
-        {/* Register Link */}
-        <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>Don’t have an account? </Text>
-          <Link href="/(auth)/RegisterScreen" style={styles.registerLink}>
-            Register here
-          </Link>
+          <View style={styles.registerContainer}>
+            <Text style={styles.registerText}>Don’t have an account? </Text>
+            <Link href="/(auth)/RegisterScreen" style={styles.registerLink}>
+              Register here
+            </Link>
+          </View>
         </View>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+
+      <ErrorModal visible={modalVisible} message={errorMessage} onClose={() => setModalVisible(false)} />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  inner: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  logo: {
-    width: 140,
-    height: 140,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 40,
-    color: "#333",
-  },
+  container: { flex: 1 },
+  inner: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
+  logo: { width: 140, height: 140, marginBottom: 20 },
+  title: { fontSize: 28, fontWeight: "700", marginBottom: 40, color: "#0d0d0d" },
   input: {
     width: "100%",
     height: 60,
@@ -110,35 +88,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 20,
     fontSize: 18,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    borderWidth: 0.5,
+    borderColor: "#000000",
   },
-  button: {
-    width: "100%",
-    height: 60,
-    backgroundColor: "#FF5C00",
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
-    elevation: 3,
-  },
-  buttonText: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#fff",
-  },
-  registerContainer: {
-    flexDirection: "row",
-    marginTop: 20,
-  },
-  registerText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  registerLink: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FF5C00",
-  },
+  button: { width: "100%", height: 60, backgroundColor: "#FF5C00", borderRadius: 12, justifyContent: "center", alignItems: "center", marginTop: 10, elevation: 3 },
+  buttonText: { fontSize: 20, fontWeight: "600", color: "#fff" },
+  registerContainer: { flexDirection: "row", marginTop: 20 },
+  registerText: { fontSize: 16, color: "#333" },
+  registerLink: { fontSize: 16, fontWeight: "600", color: "#FF5C00" },
 });
