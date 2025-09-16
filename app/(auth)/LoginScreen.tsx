@@ -1,8 +1,17 @@
+import { LinearGradient } from "expo-linear-gradient";
+import { Link } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { auth } from "../../Lib/firebase";
-
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -10,7 +19,11 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       console.log("✅ Logged in:", userCredential.user);
       Alert.alert("Success", "Logged in successfully!");
     } catch (error: any) {
@@ -20,42 +33,68 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>NutriTakes Login</Text>
+    <LinearGradient
+      colors={["#FFFDD0", "#FFD580", "#FFB347"]}
+      style={styles.container}
+    >
+      <View style={styles.inner}>
+        <Image
+          source={require("@/assets/images/icon/NT.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#777"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
+        <Text style={styles.title}>NutriTakes Login</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#777"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#777"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
-    </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#777"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+
+        {/* Register Link */}
+        <View style={styles.registerContainer}>
+          <Text style={styles.registerText}>Don’t have an account? </Text>
+          <Link href="/(auth)/RegisterScreen" style={styles.registerLink}>
+            Register here
+          </Link>
+        </View>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFDD0",
+  },
+  inner: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+  },
+  logo: {
+    width: 140,
+    height: 140,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
@@ -82,10 +121,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
+    elevation: 3,
   },
   buttonText: {
     fontSize: 20,
     fontWeight: "600",
     color: "#fff",
+  },
+  registerContainer: {
+    flexDirection: "row",
+    marginTop: 20,
+  },
+  registerText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  registerLink: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FF5C00",
   },
 });

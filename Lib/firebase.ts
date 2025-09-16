@@ -1,15 +1,17 @@
-// firebase.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { getReactNativePersistence, initializeAuth } from "firebase/auth";
+import { initializeAuth } from "firebase/auth";
+import { getReactNativePersistence } from "firebase/auth/react-native";
+
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyD63ghthHRxYwTvnhuoJbyoNmtx1B5iSVs",
+  authDomain: "nutritakes-ccd71.firebaseapp.com",
+  projectId: "nutritakes-ccd71",
+  storageBucket: "nutritakes-ccd71.appspot.com",
+  messagingSenderId: "52216623493",
+  appId: "1:52216623493:web:2b16051c570dc09a0714ec",
+  measurementId: "G-RLL1D12DJ7"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -18,5 +20,5 @@ const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
 
-export { auth };
+export { app, auth };
 
