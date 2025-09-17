@@ -1,60 +1,127 @@
-
-
 export type Meal = {
+  timestamp: Date; // or `any` if you want to be flexible
   name: string;
   image: string;
   description: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fats: number;
+  servings: number;
 };
 
-export const recentMeals: Meal[] = [
+const recentMeals: Meal[] = [
   {
+    timestamp: new Date(),
     name: "Chicken Adobo",
     image: "https://via.placeholder.com/150",
     description: "Classic Filipino chicken adobo with soy sauce and garlic",
+    calories: 350,
+    protein: 25,
+    carbs: 20,
+    fats: 15,
+    servings: 1,
   },
   {
+    timestamp: new Date(),
     name: "Sinigang na Baboy",
     image: "https://via.placeholder.com/150",
     description: "Sour pork soup with vegetables",
+    calories: 200,
+    protein: 15,
+    carbs: 10,
+    fats: 5,
+    servings: 2,
   },
   {
+    timestamp: new Date(),
     name: "Kare-Kare",
     image: "https://via.placeholder.com/150",
     description: "Peanut-based oxtail stew with vegetables",
+    calories: 400,
+    protein: 30,
+    carbs: 25,
+    fats: 18,
+    servings: 1,
   },
   {
+    timestamp: new Date(),
     name: "Lechon Kawali",
     image: "https://via.placeholder.com/150",
     description: "Crispy deep-fried pork belly served with liver sauce",
+    calories: 500,
+    protein: 35,
+    carbs: 10,
+    fats: 40,
+    servings: 1,
   },
   {
+    timestamp: new Date(),
     name: "Pancit Canton",
     image: "https://via.placeholder.com/150",
     description: "Stir-fried egg noodles with meat and vegetables",
+    calories: 300,
+    protein: 15,
+    carbs: 45,
+    fats: 8,
+    servings: 1,
   },
   {
+    timestamp: new Date(),
     name: "Laing",
     image: "https://via.placeholder.com/150",
     description: "Taro leaves cooked in coconut milk with chili and shrimp paste",
+    calories: 250,
+    protein: 5,
+    carbs: 15,
+    fats: 20,
+    servings: 1,
   },
   {
+    timestamp: new Date(),
     name: "Bicol Express",
     image: "https://via.placeholder.com/150",
     description: "Spicy pork stew with coconut milk and chili peppers",
+    calories: 400,
+    protein: 25,
+    carbs: 12,
+    fats: 30,
+    servings: 1,
   },
   {
+    timestamp: new Date(),
     name: "Lumpiang Shanghai",
     image: "https://via.placeholder.com/150",
     description: "Crispy fried spring rolls filled with ground pork and vegetables",
+    calories: 180,
+    protein: 10,
+    carbs: 15,
+    fats: 10,
+    servings: 2,
   },
   {
+    timestamp: new Date(),
     name: "Halo-Halo",
     image: "https://via.placeholder.com/150",
     description: "Shaved ice dessert with fruits, jellies, and leche flan",
+    calories: 350,
+    protein: 5,
+    carbs: 70,
+    fats: 5,
+    servings: 1,
   },
   {
+    timestamp: new Date(),
     name: "Tapsilog",
     image: "https://via.placeholder.com/150",
     description: "Beef tapa served with garlic fried rice and fried egg",
+    calories: 450,
+    protein: 30,
+    carbs: 40,
+    fats: 20,
+    servings: 1,
   },
 ];
+
+
+export default recentMeals;

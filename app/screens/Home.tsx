@@ -2,8 +2,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import DishCard from "../components/DishCard";
-import { recentMeals } from "../data/meal";
+import recentMeals from "../data/meal";
 
 export default function Home() {
   const router = useRouter();
@@ -44,18 +43,12 @@ export default function Home() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 8}}
+          contentContainerStyle={{ paddingHorizontal: 8 }}
         >
           {recentMeals.map((meal, index) => (
-            <View key={index} style={{ marginHorizontal: 8, width: 200  }}>
-              <DishCard
-                name={meal.name}
-                image={meal.image}
-                description={meal.description}
-                calories={0}
-                protein={""}
-                time={""}
-              />
+            <View key={index} style={styles.mealCard}>
+              <Text style={styles.mealName}>{meal.name}</Text>
+              <Text style={styles.mealDesc}>{meal.description}</Text>
             </View>
           ))}
         </ScrollView>
@@ -97,6 +90,18 @@ const styles = StyleSheet.create({
   actionText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 
   sectionTitle: { fontSize: 20, fontWeight: "700", marginVertical: 12, marginHorizontal: 16 },
+
+  mealCard: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginHorizontal: 8,
+    width: 200,
+    justifyContent: "center",
+    elevation: 2,
+  },
+  mealName: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
+  mealDesc: { fontSize: 14, color: "#555" },
 
   tipCard: {
     backgroundColor: "#fff",

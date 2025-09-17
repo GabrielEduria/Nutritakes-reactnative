@@ -7,7 +7,7 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { auth } from "../Lib/firebase";
-import SplashScreen from "./SplashScreen";
+import SplashScreen from "./screens/SplashScreen";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();

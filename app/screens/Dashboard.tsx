@@ -1,68 +1,122 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import DishCard from "../components/DishCard";
+import { getAuth } from "firebase/auth";
+import { collection, getDocs } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { db } from "../../Lib/firebase";
+import MacroCard from "../components/cards/MacroCard";
+import { Meal } from "../data/meal";
 
-const Dashboard: React.FC = () => {
-  const stats = [
-    { label: "Calories Today", value: 1450 },
-    { label: "Meals Logged", value: 5 },
-    { label: "Dishes Recognized", value: 12 },
-  ];
+export default function Dashboard() {
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [stats, setStats] = useState({ mealsLogged: 0, caloriesToday: 0, dishesRecognized: 0 });
+  const [loading, setLoading] = useState(true);
 
-  const recentDishes = [
-    { name: "Adobo", image: "https://via.placeholder.com/150" },
-    { name: "Sinigang", image: "https://via.placeholder.com/150" },
-    { name: "Kare-Kare", image: "https://via.placeholder.com/150" },
-  ];
+  const user = getAuth().currentUser;
+
+  useEffect(() => {
+    const fetchMeals = async () => {
+      if (!user) return;
+
+      try {
+        const mealsCol = collection(db, `profiles/${user.uid}/meals`);
+        const mealDocs = await getDocs(mealsCol);
+        const mealsData: Meal[] = mealDocs.docs.map((doc) => doc.data() as Meal);
+        setMeals(mealsData);
+
+  
+        const today = new Date();
+        const caloriesToday = mealsData
+          .filter((meal) => {
+            const mealDate = meal.timestamp?.toDate ? meal.timestamp.toDate() : new Date(meal.timestamp);
+            return (
+              mealDate.getDate() === today.getDate() &&
+              mealDate.getMonth() === today.getMonth() &&
+              mealDate.getFullYear() === today.getFullYear()
+            );
+          })
+          .reduce((sum, meal) => sum + (meal.calories || 0), 0);
+
+        const uniqueDishes = new Set(mealsData.map((meal) => meal.name));
+        setStats({ mealsLogged: mealsData.length, caloriesToday, dishesRecognized: uniqueDishes.size });
+      } catch (err) {
+        console.error("Error fetching meals:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMeals();
+  }, [user]);
+
+  if (loading)
+    return (
+      <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
+        <ActivityIndicator size="large" style={{ marginTop: 50 }} />
+      </LinearGradient>
+    );
 
   return (
-    <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.header}>Welcome Back!</Text>
-
-        {/* Stats Cards */}
+    <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.sectionTitle}>Your Stats</Text>
         <View style={styles.statsContainer}>
-          {stats.map((stat, index) => (
-            <View key={index} style={styles.statCard}>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{stats.mealsLogged}</Text>
+            <Text style={styles.statLabel}>Meals Logged</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{stats.caloriesToday}</Text>
+            <Text style={styles.statLabel}>Calories Today</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{stats.dishesRecognized}</Text>
+            <Text style={styles.statLabel}>Dishes Recognized</Text>
+          </View>
         </View>
 
-        {/* Recent Dishes */}
-        <Text style={styles.sectionTitle}>Recent Dishes</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {recentDishes.map((dish, index) => (
-            <DishCard key={index} name={dish.name} image={dish.image} />
+        <Text style={styles.sectionTitle}>Recent Meals</Text>
+        <View style={styles.mealsContainer}>
+          {meals.map((meal, index) => (
+            <MacroCard key={index} meal={meal} />
           ))}
-        </ScrollView>
+        </View>
       </ScrollView>
     </LinearGradient>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { padding: 20 },
-  header: { fontSize: 28, fontWeight: "700", marginBottom: 20, color: "#0d0d0d" },
-  statsContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 30 },
+  background: { flex: 1 },
+  container: { paddingBottom: 30, paddingTop: 20, alignItems: "center" },
+
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginVertical: 12,
+    alignSelf: "flex-start",
+    marginLeft: 20,
+  },
+
+  statsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+    marginBottom: 20,
+  },
   statCard: {
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
+    flex: 1,
+    marginHorizontal: 5,
     alignItems: "center",
-    width: 100,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
-  statValue: { fontSize: 20, fontWeight: "700", marginBottom: 4 },
-  statLabel: { fontSize: 14, textAlign: "center", color: "#555" },
-  sectionTitle: { fontSize: 20, fontWeight: "600", marginBottom: 12, color: "#0d0d0d" },
-});
+  statValue: { fontSize: 18, fontWeight: "700" },
+  statLabel: { fontSize: 14, color: "#555", textAlign: "center", marginTop: 4 },
 
-export default Dashboard;
+  mealsContainer: {
+    width: "90%",
+  },
+});

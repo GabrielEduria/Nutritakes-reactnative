@@ -80,11 +80,10 @@ export default function Profile() {
     let newName = profile.name || "";
     let newImageUri: string | null = null;
 
-    // Pick new image
+
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
     if (!result.cancelled) newImageUri = result.uri;
 
-    // Ask for new name (basic prompt)
     Alert.prompt("Edit Name", "Enter your new display name", [
       {
         text: "Cancel",
@@ -97,7 +96,6 @@ export default function Profile() {
 
           let photoURL = user?.photoURL;
 
-          // Upload new image if selected
           if (newImageUri) {
             const response = await fetch(newImageUri);
             const blob = await response.blob();
@@ -106,10 +104,9 @@ export default function Profile() {
             photoURL = await getDownloadURL(storageRef);
           }
 
-          // Update Firebase Auth
+
           await updateProfile(user!, { displayName: newName, photoURL });
 
-          // Update Firestore
           await setDoc(doc(db, "profiles", user!.uid), { name: newName, picture: photoURL }, { merge: true });
 
           setProfile({ ...profile, name: newName, picture: photoURL });
@@ -123,14 +120,14 @@ export default function Profile() {
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Avatar */}
+
         <Image source={{ uri: profile.picture || user?.photoURL || "https://via.placeholder.com/120" }} style={styles.avatar} />
 
-        {/* Greeting */}
+
         <Text style={styles.greeting}>Hello, {profile.name || "User"}!</Text>
         <Text style={styles.subtitle}>Manage your account & track your stats</Text>
 
-        {/* User Info */}
+
         <View style={styles.infoCard}>
           <Text style={styles.label}>Email:</Text>
           <Text style={styles.value}>{profile.email || user?.email}</Text>
@@ -139,7 +136,7 @@ export default function Profile() {
           <Text style={styles.value}>{user?.emailVerified ? "Yes ✅" : "No ❌"}</Text>
         </View>
 
-        {/* Quick Stats */}
+
         <Text style={styles.sectionTitle}>Your Stats</Text>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
@@ -156,7 +153,7 @@ export default function Profile() {
           </View>
         </View>
 
-        {/* Account Actions */}
+  
         <Text style={styles.sectionTitle}>Account Actions</Text>
         <View style={styles.actionsContainer}>
           <TouchableOpacity style={styles.actionButton} onPress={handleChangePassword}>
@@ -167,7 +164,7 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
 
-        {/* Logout */}
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
