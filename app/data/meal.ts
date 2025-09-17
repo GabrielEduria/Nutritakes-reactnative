@@ -1,4 +1,12 @@
-export const recentMeals = [
+
+
+export type Meal = {
+  name: string;
+  image: string;
+  description: string;
+};
+
+export const recentMeals: Meal[] = [
   {
     name: "Chicken Adobo",
     image: "https://via.placeholder.com/150",
