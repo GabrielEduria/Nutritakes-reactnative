@@ -26,7 +26,7 @@ const MacroCard: React.FC<MacroCardProps> = ({ meal }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FFF8F0",
     borderRadius: 12,
     marginBottom: 16,
     padding: 16,

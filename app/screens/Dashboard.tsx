@@ -1,53 +1,45 @@
+
 import { LinearGradient } from "expo-linear-gradient";
-import { getAuth } from "firebase/auth";
-import { collection, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
-import { db } from "../../Lib/firebase";
 import MacroCard from "../components/cards/MacroCard";
-import { Meal } from "../data/meal";
+import recentMeals, { Meal } from "../data/meal"; //dummy textbook // for future reference integrate firestore to display this
+
 
 export default function Dashboard() {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [stats, setStats] = useState({ mealsLogged: 0, caloriesToday: 0, dishesRecognized: 0 });
   const [loading, setLoading] = useState(true);
 
-  const user = getAuth().currentUser;
-
   useEffect(() => {
-    const fetchMeals = async () => {
-      if (!user) return;
-
-      try {
-        const mealsCol = collection(db, `profiles/${user.uid}/meals`);
-        const mealDocs = await getDocs(mealsCol);
-        const mealsData: Meal[] = mealDocs.docs.map((doc) => doc.data() as Meal);
-        setMeals(mealsData);
-
   
-        const today = new Date();
-        const caloriesToday = mealsData
-          .filter((meal) => {
-            const mealDate = meal.timestamp?.toDate ? meal.timestamp.toDate() : new Date(meal.timestamp);
-            return (
-              mealDate.getDate() === today.getDate() &&
-              mealDate.getMonth() === today.getMonth() &&
-              mealDate.getFullYear() === today.getFullYear()
-            );
-          })
-          .reduce((sum, meal) => sum + (meal.calories || 0), 0);
+    setTimeout(() => {
+      setMeals(recentMeals);
+      calculateStats(recentMeals);
+      setLoading(false);
+    }, 500); 
+  }, []);
 
-        const uniqueDishes = new Set(mealsData.map((meal) => meal.name));
-        setStats({ mealsLogged: mealsData.length, caloriesToday, dishesRecognized: uniqueDishes.size });
-      } catch (err) {
-        console.error("Error fetching meals:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const calculateStats = (mealsData: Meal[]) => {
+    const today = new Date();
+    const caloriesToday = mealsData
+      .filter((meal) => {
+        const mealDate = meal.timestamp || new Date();
+        return (
+          mealDate.getDate() === today.getDate() &&
+          mealDate.getMonth() === today.getMonth() &&
+          mealDate.getFullYear() === today.getFullYear()
+        );
+      })
+      .reduce((sum, meal) => sum + (meal.calories || 0), 0);
 
-    fetchMeals();
-  }, [user]);
+    const uniqueDishes = new Set(mealsData.map((meal) => meal.name));
+    setStats({
+      mealsLogged: mealsData.length,
+      caloriesToday,
+      dishesRecognized: uniqueDishes.size,
+    });
+  };
 
   if (loading)
     return (
@@ -59,6 +51,7 @@ export default function Dashboard() {
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Stats */}
         <Text style={styles.sectionTitle}>Your Stats</Text>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
@@ -75,6 +68,7 @@ export default function Dashboard() {
           </View>
         </View>
 
+       
         <Text style={styles.sectionTitle}>Recent Meals</Text>
         <View style={styles.mealsContainer}>
           {meals.map((meal, index) => (
@@ -89,7 +83,6 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   background: { flex: 1 },
   container: { paddingBottom: 30, paddingTop: 20, alignItems: "center" },
-
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
@@ -97,7 +90,6 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginLeft: 20,
   },
-
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -115,8 +107,5 @@ const styles = StyleSheet.create({
   },
   statValue: { fontSize: 18, fontWeight: "700" },
   statLabel: { fontSize: 14, color: "#555", textAlign: "center", marginTop: 4 },
-
-  mealsContainer: {
-    width: "90%",
-  },
+  mealsContainer: { width: "90%" },
 });

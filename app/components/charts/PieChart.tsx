@@ -3,7 +3,7 @@ import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { PieChart as RNPieChart } from "react-native-chart-kit";
 
 export type PieChartData = {
-  name: string; 
+  name: string;
   value: number;
   color: string;
 };
@@ -14,8 +14,8 @@ type PieChartProps = {
 };
 
 const PieChart: React.FC<PieChartProps> = ({ data, title }) => {
-  const screenWidth = Dimensions.get("window").width - 40; 
-  
+  const screenWidth = Dimensions.get("window").width * 0.8; // responsive width
+
   const chartData = data.map((d) => ({
     name: d.name,
     population: d.value,
@@ -35,12 +35,14 @@ const PieChart: React.FC<PieChartProps> = ({ data, title }) => {
           backgroundColor: "#fff",
           backgroundGradientFrom: "#fff",
           backgroundGradientTo: "#fff",
-          color: () => "#fff",
+          color: (opacity = 1) => `rgba(0,0,0, ${opacity})`,
+          labelColor: (opacity = 1) => `rgba(0,0,0, ${opacity})`,
         }}
         accessor="population"
         backgroundColor="transparent"
-        paddingLeft="15"
+        paddingLeft="0"
         absolute
+        hasLegend={true}
       />
     </View>
   );
@@ -48,13 +50,15 @@ const PieChart: React.FC<PieChartProps> = ({ data, title }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
+    alignItems: "center",
     marginVertical: 8,
-    elevation: 2,
   },
-  title: { fontSize: 16, fontWeight: "bold", marginBottom: 8, textAlign: "center" },
+  title: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 8,
+    textAlign: "center",
+  },
 });
 
 export default PieChart;
