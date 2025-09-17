@@ -1,11 +1,11 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-// 1️⃣ Define props for multi-step registration
+
 type NameScreenProps = {
-  onNext?: (enteredName: string) => void; // optional callback if using a wrapper
+  onNext?: (enteredName: string) => void; 
 };
 
 export default function NameScreen({ onNext }: NameScreenProps) {
@@ -15,16 +15,21 @@ export default function NameScreen({ onNext }: NameScreenProps) {
   const handleNext = () => {
     if (name.trim() === "") return;
 
-    // Call wrapper callback if exists
+
     if (onNext) onNext(name);
 
-    // Navigate to PhotoScreen, passing name
+
     router.push({ pathname: "/(auth)/register/PhotoScreen", params: { name } });
   };
 
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.container}>
       <View style={styles.inner}>
+           <Image
+              source={require("@/assets/images/icon/NT.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
         <Text style={styles.title}>What&apos;s your name?</Text>
         <TextInput
           style={styles.input}
@@ -44,6 +49,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   inner: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   title: { fontSize: 24, fontWeight: "700", marginBottom: 20, textAlign: "center" },
+  logo: { width: 140, height: 140, marginBottom: 20 },
   input: {
     width: "100%",
     height: 55,

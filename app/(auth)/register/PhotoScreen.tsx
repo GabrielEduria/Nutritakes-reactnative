@@ -5,8 +5,8 @@ import React, { useState } from "react";
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type PhotoScreenProps = {
-  name: string; // received from previous step
-  onNext?: (selectedPhoto: string | null) => void; // callback to wrapper
+  name: string;
+  onNext: (selectedPhoto: string | null) => void; 
 };
 
 export default function PhotoScreen({ name, onNext }: PhotoScreenProps) {
@@ -30,6 +30,7 @@ export default function PhotoScreen({ name, onNext }: PhotoScreenProps) {
     if (!result.canceled) setPhoto(result.assets[0].uri);
   };
 
+
   const takePhotoWithCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
@@ -46,11 +47,12 @@ export default function PhotoScreen({ name, onNext }: PhotoScreenProps) {
     if (!result.canceled) setPhoto(result.assets[0].uri);
   };
 
+  
   const handleNext = () => {
     if (onNext) {
-      onNext(photo); 
+      onNext(photo ?? null);
     } else {
-    
+      // fallback route
       router.push({ pathname: "/(auth)/register/CredentialsScreen", params: { name, photo } });
     }
   };
@@ -58,8 +60,11 @@ export default function PhotoScreen({ name, onNext }: PhotoScreenProps) {
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.container}>
       <View style={styles.inner}>
-        <Text style={styles.title}>Add a profile photo</Text>
-
+        <Image
+          source={require("@/assets/images/icon/NT.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         {photo ? (
           <Image source={{ uri: photo }} style={styles.photo} />
         ) : (
@@ -67,7 +72,7 @@ export default function PhotoScreen({ name, onNext }: PhotoScreenProps) {
             <Text style={styles.photoPlaceholderText}>No photo selected</Text>
           </View>
         )}
-
+        <Text style={styles.title}>Add a profile photo</Text>
         <TouchableOpacity style={styles.button} onPress={pickImageFromGallery}>
           <Text style={styles.buttonText}>Choose from Gallery</Text>
         </TouchableOpacity>
@@ -87,7 +92,8 @@ export default function PhotoScreen({ name, onNext }: PhotoScreenProps) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   inner: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
-  title: { fontSize: 24, fontWeight: "700", marginBottom: 20, textAlign: "center" },
+  title: { fontSize: 18, fontWeight: "400", marginBottom: 10, textAlign: "center" },
+  logo: { width: 140, height: 140, marginBottom: 20 },
   photo: { width: 120, height: 120, borderRadius: 60, marginBottom: 20 },
   photoPlaceholder: {
     width: 120,

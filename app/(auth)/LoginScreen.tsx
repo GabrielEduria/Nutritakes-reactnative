@@ -6,6 +6,14 @@ import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "reac
 import { auth } from "../../Lib/firebase";
 import ErrorModal from "../components/modals/ErrorModal";
 
+const firebaseErrorMessages: Record<string, string> = {
+  "auth/email-already-in-use": "This email is already registered.",
+  "auth/invalid-email": "Please enter a valid email address.",
+  "auth/weak-password": "Password must be at least 6 characters.",
+  "auth/user-not-found": "No account found with this email.",
+  "auth/wrong-password": "Incorrect password. Please try again.",
+};
+
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,6 +21,12 @@ export default function LoginScreen() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const router = useRouter();
+
+  const handleError = (err: any) => {
+    const friendlyMessage = err.code ? firebaseErrorMessages[err.code] : "Something went wrong. Please try again.";
+    setErrorMessage(friendlyMessage);
+    setModalVisible(true);
+  };
 
   const handleLogin = async () => {
     if (!email.trim()) {
@@ -39,19 +53,14 @@ export default function LoginScreen() {
       const user = userCredential.user;
 
       if (!user.emailVerified) {
-        setErrorMessage(
-          "Please verify your email first. Check your inbox or spam folder."
-        );
+        setErrorMessage("Please verify your email first. Check your inbox or spam folder.");
         setModalVisible(true);
         return;
       }
 
-      console.log("Successfully Logged in:", user.email);
-
       router.replace("/screens/AppLayout");
     } catch (error: any) {
-      setErrorMessage(error.message);
-      setModalVisible(true);
+      handleError(error);
     }
   };
 

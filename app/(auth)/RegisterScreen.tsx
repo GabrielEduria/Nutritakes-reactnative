@@ -6,9 +6,7 @@ import PhotoScreen from "./register/PhotoScreen";
 export default function RegisterScreen() {
   const [step, setStep] = useState<"name" | "photo" | "credentials">("name");
   const [name, setName] = useState("");
-  const [photo, setPhoto] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [photo, setPhoto] = useState<string | null>(null);
 
   return (
     <>
@@ -20,6 +18,7 @@ export default function RegisterScreen() {
           }}
         />
       )}
+
       {step === "photo" && (
         <PhotoScreen
           name={name}
@@ -29,14 +28,11 @@ export default function RegisterScreen() {
           }}
         />
       )}
+
       {step === "credentials" && (
         <CredentialsScreen
           name={name}
           photo={photo}
-          email={email}
-          password={password}
-          setEmail={setEmail}
-          setPassword={setPassword}
         />
       )}
     </>
