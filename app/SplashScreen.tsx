@@ -1,17 +1,55 @@
-import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
 
 export default function SplashScreen() {
+  const logoAnim = useRef(new Animated.Value(0)).current; // opacity & scale
+
+  useEffect(() => {
+    Animated.timing(logoAnim, {
+      toValue: 1,
+      duration: 1500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Image
+      <Animated.Image
         source={require("@/assets/images/icon/NT.png")}
-        style={styles.logo}
+        style={[
+          styles.logo,
+          {
+            opacity: logoAnim,
+            transform: [
+              {
+                scale: logoAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.8, 1],
+                }),
+              },
+            ],
+          },
+        ]}
         resizeMode="contain"
       />
-      <Text style={styles.text}>
+      <Animated.Text
+        style={[
+          styles.text,
+          {
+            opacity: logoAnim,
+            transform: [
+              {
+                translateY: logoAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [20, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
         NutriTakes: A Food Nutritional Content Analysis
-      </Text>
+      </Animated.Text>
     </View>
   );
 }
@@ -19,7 +57,7 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFDD0", 
+    backgroundColor: "#FFFDD0",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,

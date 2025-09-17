@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   inner: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   logo: { width: 140, height: 140, marginBottom: 20 },
-  title: { fontSize: 28, fontWeight: "700", marginBottom: 40, color: "#0d0d0d" },
+  title: { fontSize: 26, fontWeight: "700", marginBottom: 30, color: "#0d0d0d" },
   input: {
     width: "100%",
     height: 60,

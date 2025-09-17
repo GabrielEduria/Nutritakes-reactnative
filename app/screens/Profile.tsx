@@ -15,7 +15,6 @@ export default function Profile() {
     { label: "Dishes Recognized", value: 18 },
   ];
 
-  // Placeholder profile image
   const avatar = "https://via.placeholder.com/120";
 
   const handleLogout = async () => {
@@ -33,21 +32,28 @@ export default function Profile() {
       style={styles.background}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Image source={{ uri: avatar }} style={styles.avatar} />
+        {/* Avatar */}
+        <View style={styles.avatarWrapper}>
+          <Image source={{ uri: avatar }} style={styles.avatar} />
+        </View>
 
+        {/* Greeting */}
         <Text style={styles.greeting}>Hello, {user?.displayName || "User"}!</Text>
         <Text style={styles.subtitle}>Manage your account & track your stats</Text>
 
+        {/* User Info Card */}
         <View style={styles.infoCard}>
-          <Text style={styles.label}>Email:</Text>
-          <Text style={styles.value}>{user?.email}</Text>
-
-          <Text style={styles.label}>Email Verified:</Text>
-          <Text style={styles.value}>
-            {user?.emailVerified ? "Yes ✅" : "No ❌"}
-          </Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.value}>{user?.email}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Verified</Text>
+            <Text style={styles.value}>{user?.emailVerified ? "Yes ✅" : "No ❌"}</Text>
+          </View>
         </View>
 
+        {/* Stats */}
         <Text style={styles.sectionTitle}>Your Stats</Text>
         <View style={styles.statsContainer}>
           {stats.map((stat, index) => (
@@ -58,17 +64,18 @@ export default function Profile() {
           ))}
         </View>
 
+        {/* Account Actions */}
         <Text style={styles.sectionTitle}>Account Actions</Text>
         <View style={styles.actionsContainer}>
           <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionText}>Change Password</Text>
           </TouchableOpacity>
-
           <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
+        {/* Logout */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
@@ -79,70 +86,104 @@ export default function Profile() {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  container: { paddingBottom: 30, paddingTop: 20, alignItems: "center" },
+  container: {
+    alignItems: "center",
+    paddingVertical: 30,
+    paddingBottom: 50,
+  },
 
-  avatar: { width: 120, height: 120, borderRadius: 60, marginBottom: 16 },
-  greeting: { fontSize: 26, fontWeight: "700", color: "#0d0d0d", marginBottom: 4 },
-  subtitle: { fontSize: 16, color: "#333", marginBottom: 20 },
+  avatarWrapper: {
+    borderRadius: 70,
+    padding: 4,
+    backgroundColor: "#FF5C00",
+    marginBottom: 16,
+  },
+  avatar: { width: 120, height: 120, borderRadius: 60 },
+
+  greeting: { fontSize: 28, fontWeight: "800", color: "#0d0d0d", marginBottom: 4 },
+  subtitle: { fontSize: 16, color: "#555", marginBottom: 24, textAlign: "center" },
 
   infoCard: {
     width: "90%",
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    elevation: 3,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 30,
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
   },
-  label: { fontSize: 14, color: "#555", marginTop: 8 },
-  value: { fontSize: 16, fontWeight: "600", color: "#0d0d0d" },
+  infoRow: { marginBottom: 12 },
+  label: { fontSize: 14, color: "#888" },
+  value: { fontSize: 16, fontWeight: "700", color: "#0d0d0d", marginTop: 2 },
 
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginVertical: 12,
-    alignSelf: "flex-start",
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#0d0d0d",
     marginLeft: 20,
+    alignSelf: "flex-start",
+    marginVertical: 14,
   },
 
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "90%",
-    marginBottom: 20,
+    marginBottom: 30,
   },
   statCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
     flex: 1,
-    marginHorizontal: 5,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    marginHorizontal: 6,
     alignItems: "center",
-    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
   },
-  statValue: { fontSize: 18, fontWeight: "700" },
-  statLabel: { fontSize: 14, color: "#555", textAlign: "center", marginTop: 4 },
+  statValue: { fontSize: 22, fontWeight: "800", color: "#FF5C00" },
+  statLabel: { fontSize: 14, color: "#555", marginTop: 6, textAlign: "center" },
 
-  actionsContainer: { flexDirection: "row", justifyContent: "space-between", width: "90%", marginBottom: 20 },
+  actionsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+    marginBottom: 30,
+  },
   actionButton: {
     flex: 1,
     backgroundColor: "#FF5C00",
-    paddingVertical: 14,
-    marginHorizontal: 5,
-    borderRadius: 12,
+    paddingVertical: 16,
+    marginHorizontal: 6,
+    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 2,
+    shadowColor: "#FF5C00",
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 5,
   },
-  actionText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  actionText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 
   logoutButton: {
     width: "90%",
     backgroundColor: "#FF5C00",
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 18,
+    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 2,
+    shadowColor: "#FF5C00",
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
   },
-  logoutText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  logoutText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });

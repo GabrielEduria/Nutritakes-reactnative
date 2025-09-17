@@ -3,27 +3,10 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import DishCard from "../components/DishCard";
+import { recentMeals } from "../data/meal";
 
 export default function Home() {
   const router = useRouter();
-
-  const recentMeals = [
-    {
-      name: "Chicken Adobo",
-      image: "https://via.placeholder.com/150",
-      description: "Classic Filipino chicken adobo with soy sauce and garlic",
-    },
-    {
-      name: "Sinigang na Baboy",
-      image: "https://via.placeholder.com/150",
-      description: "Sour pork soup with vegetables",
-    },
-    {
-      name: "Kare-Kare",
-      image: "https://via.placeholder.com/150",
-      description: "Peanut-based oxtail stew with vegetables",
-    },
-  ];
 
   const tips = [
     "Drink at least 8 glasses of water daily.",
@@ -37,11 +20,10 @@ export default function Home() {
       style={styles.background}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Header */}
+
         <Text style={styles.greeting}>Good Morning, User!</Text>
         <Text style={styles.subtitle}>Track your meals and stay healthy</Text>
 
-        {/* Quick Actions */}
         <View style={styles.actionsContainer}>
           <TouchableOpacity
             style={styles.actionButton}
@@ -58,24 +40,26 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
-        {/* Recent Meals */}
         <Text style={styles.sectionTitle}>Recent Meals</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
-          >
-            {recentMeals.map((meal, index) => (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 8}}
+        >
+          {recentMeals.map((meal, index) => (
+            <View key={index} style={{ marginHorizontal: 8, width: 200  }}>
               <DishCard
-                key={index}
                 name={meal.name}
                 image={meal.image}
                 description={meal.description}
+                calories={0}
+                protein={""}
+                time={""}
               />
-            ))}
-          </ScrollView>
+            </View>
+          ))}
+        </ScrollView>
 
-        {/* Tips & Recommendations */}
         <Text style={styles.sectionTitle}>Tips & Recommendations</Text>
         {tips.map((tip, index) => (
           <View key={index} style={styles.tipCard}>
@@ -113,8 +97,6 @@ const styles = StyleSheet.create({
   actionText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 
   sectionTitle: { fontSize: 20, fontWeight: "700", marginVertical: 12, marginHorizontal: 16 },
-
-  horizontalScroll: { paddingLeft: 16 },
 
   tipCard: {
     backgroundColor: "#fff",

@@ -6,14 +6,24 @@ type DishCardProps = {
   name: string;
   image: string; // URI of the dish
   description?: string;
+  calories: number;
+  protein: string;
+  time: string;
 };
 
-export default function DishCard({ name, image, description }: DishCardProps) {
+export default function DishCard({ name, image, description, calories, protein, time }: DishCardProps) {
   return (
     <View style={styles.card}>
       <Image source={{ uri: image }} style={styles.image} />
       <Text style={styles.name}>{name}</Text>
       {description && <Text style={styles.description}>{description}</Text>}
+
+      <View style={styles.nutritionRow}>
+        <Text style={styles.nutritionText}>{calories} cal</Text>
+        <Text style={styles.nutritionText}>{protein} protein</Text>
+      </View>
+
+      <Text style={styles.timeText}>{time}</Text>
     </View>
   );
 }
@@ -34,5 +44,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   name: { fontSize: 18, fontWeight: "600", marginBottom: 5 },
-  description: { fontSize: 14, color: "#555", textAlign: "center" },
+  description: { fontSize: 14, color: "#555", textAlign: "center", marginBottom: 8 },
+  nutritionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 6,
+  },
+  nutritionText: {
+    fontSize: 14,
+    color: "#FF5C00",
+    fontWeight: "600",
+  },
+  timeText: {
+    fontSize: 12,
+    color: "#888",
+  },
 });
