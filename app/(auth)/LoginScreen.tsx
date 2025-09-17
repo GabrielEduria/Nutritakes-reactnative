@@ -4,7 +4,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { auth } from "../../Lib/firebase";
-import ErrorModal from "../components/ErrorModal";
+import ErrorModal from "../components/modals/ErrorModal";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -92,7 +92,7 @@ export default function LoginScreen() {
 
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>Don’t have an account? </Text>
-            <Link href="/(auth)/RegisterScreen" style={styles.registerLink}>
+            <Link href="/(auth)/register/NameScreen" style={styles.registerLink}>
               Register here
             </Link>
           </View>
