@@ -18,7 +18,11 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.NutriTakesReactNative"
+      "package": "com.anonymous.NutriTakesReactNative",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "output": "static",
@@ -51,6 +55,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4fd94f75-2e91-4bb2-8fe7-a2697b5daafc"
+      }
     }
   }
 }
