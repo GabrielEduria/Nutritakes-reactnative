@@ -1,98 +1,124 @@
-import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
-import { getAuth } from "firebase/auth";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { useRef, useState } from "react";
-import { Button, StyleSheet, View } from "react-native";
-import { db } from "../../Lib/firebase";
-import NutritionLabelCard from "../components/cards/NutritionLabelCard";
-import { Meal } from "../data/meal";
+import { scanAndSaveMeal } from "@/Lib/scanMeal";
+import { Meal } from "@/app/data/meal";
+import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function Scan() {
-  const [facing, setFacing] = useState<CameraType>("back");
-  const [permission, requestPermission] = useCameraPermissions();
-  const cameraRef = useRef<any>(null);
+type Props = {
+  onMealSaved?: (meal: Meal) => void;
+};
 
-  const [recognizedMeal, setRecognizedMeal] = useState<Meal | null>(null);
+export default function Scan({ onMealSaved }: Props) {
   const [loading, setLoading] = useState(false);
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [meal, setMeal] = useState<Meal | null>(null);
 
-  if (!permission) return <View />;
-  if (!permission.granted) {
-    return (
-      <View style={styles.container}>
-        <Button onPress={requestPermission} title="Grant Camera Permission" />
-      </View>
-    );
-  }
+  const pickImage = async (fromGallery = false) => {
+    const permission = fromGallery
+      ? await ImagePicker.requestMediaLibraryPermissionsAsync()
+      : await ImagePicker.requestCameraPermissionsAsync();
 
-  // Step 1: Capture Photo
-  const takePhoto = async () => {
-    if (!cameraRef.current) return;
-    const photo = await cameraRef.current.takePictureAsync({ base64: true });
-    await analyzePhoto(photo.base64, photo.uri);
+    if (!permission.granted) {
+      return Alert.alert(
+        "Permission required",
+        fromGallery ? "Gallery access is required" : "Camera access is required"
+      );
+    }
+
+    const result = fromGallery
+      ? await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.7 })
+      : await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      setImageUri(uri);
+      processImage(uri);
+    }
   };
 
-  // Step 2: Send to OpenAI API for recognition
-  const analyzePhoto = async (base64Image: string, uri: string) => {
+  const processImage = async (uri: string) => {
     setLoading(true);
     try {
-      // TODO: Replace with actual OpenAI call
-      // For now, mock response
-      const fakeMeal: Meal = {
-        timestamp: new Date(),
-        name: "Chicken Adobo",
-        image: uri,
-        description: "Recognized Filipino dish",
-        calories: 350,
-        protein: 25,
-        carbs: 20,
-        fats: 15,
-        servings: 1,
-      };
-
-      setRecognizedMeal(fakeMeal);
+      const newMeal = await scanAndSaveMeal(uri);
+      setMeal(newMeal);
+      if (onMealSaved) onMealSaved(newMeal);
+      Alert.alert("Meal saved!", `Logged ${newMeal.name}`);
     } catch (err) {
-      console.error("Recognition failed:", err);
+      console.error(err);
+      Alert.alert("Error", "Failed to process meal. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 3: Save confirmed meal to Firestore
-  const handleConfirm = async () => {
-    if (!recognizedMeal) return;
-    const user = getAuth().currentUser;
-    if (!user) return;
-
-    try {
-      await addDoc(collection(db, `profiles/${user.uid}/meals`), {
-        ...recognizedMeal,
-        timestamp: serverTimestamp(),
-      });
-      setRecognizedMeal(null);
-    } catch (err) {
-      console.error("Error saving meal:", err);
-    }
-  };
-
   return (
-    <View style={styles.container}>
-      {!recognizedMeal ? (
-        <>
-          <CameraView ref={cameraRef} style={styles.camera} facing={facing} />
-          <Button title="Capture" onPress={takePhoto} />
-        </>
-      ) : (
-        <>
-          <NutritionLabelCard meal={recognizedMeal} />
-          <Button title="Confirm" onPress={handleConfirm} />
-          <Button title="Retake" onPress={() => setRecognizedMeal(null)} />
-        </>
-      )}
-    </View>
+    <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.sectionTitle}>Scan a Meal</Text>
+
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(false)}>
+            <Text style={styles.actionText}>Camera</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(true)}>
+            <Text style={styles.actionText}>Gallery</Text>
+          </TouchableOpacity>
+        </View>
+
+        {loading && <ActivityIndicator size="large" style={{ marginTop: 20 }} />}
+
+        {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
+
+        {meal && (
+          <View style={styles.mealCard}>
+            <Text style={styles.mealName}>{meal.name}</Text>
+            <Text style={styles.mealDesc}>{meal.description}</Text>
+            <Text>Calories: {meal.calories}</Text>
+            <Text>Protein: {meal.protein}g</Text>
+            <Text>Carbs: {meal.carbs}g</Text>
+            <Text>Fats: {meal.fats}g</Text>
+          </View>
+        )}
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center" },
-  camera: { flex: 1 },
+  background: { flex: 1 },
+  container: { paddingTop: 20, paddingBottom: 40, alignItems: "center", width: "100%" },
+
+  sectionTitle: { fontSize: 22, fontWeight: "700", marginBottom: 20 },
+
+  actionsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+    marginBottom: 20,
+  },
+  actionButton: {
+    flex: 1,
+    backgroundColor: "#FF5C00",
+    paddingVertical: 14,
+    marginHorizontal: 5,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 2,
+  },
+  actionText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+
+  previewImage: { width: 250, height: 250, marginTop: 20, borderRadius: 12 },
+
+  mealCard: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    width: "90%",
+    marginTop: 20,
+    elevation: 2,
+  },
+  mealName: { fontSize: 18, fontWeight: "700", marginBottom: 6 },
+  mealDesc: { fontSize: 14, color: "#555", marginBottom: 8 },
 });
