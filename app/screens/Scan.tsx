@@ -1,4 +1,4 @@
-import { scanAndSaveMeal } from "@/Lib/scanMeal";
+import { ScanAndSaveMeal } from "@/Lib/ScanAndSaveMeal";
 import { Meal } from "@/app/data/meal";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
@@ -40,7 +40,8 @@ export default function Scan({ onMealSaved }: Props) {
   const processImage = async (uri: string) => {
     setLoading(true);
     try {
-      const newMeal = await scanAndSaveMeal(uri);
+      // Upload first → get public URL
+      const newMeal = await ScanAndSaveMeal(uri);// ScanMeal.ts now uploads and calls GPT
       setMeal(newMeal);
       if (onMealSaved) onMealSaved(newMeal);
       Alert.alert("Meal saved!", `Logged ${newMeal.name}`);

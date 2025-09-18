@@ -5,6 +5,7 @@ export default {
     name: "NutriTakes",
     slug: "nutritakes",
     version: "1.0.0",
+    scheme: "nutritakes", 
     extra: {
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     },

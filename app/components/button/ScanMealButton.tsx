@@ -1,4 +1,3 @@
-import { scanAndSaveMeal } from "@/Lib/scanMeal";
 import { Meal } from "@/app/data/meal";
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
