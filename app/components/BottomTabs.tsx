@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Dashboard from "../screens/Dashboard";
 import Home from "../screens/Home";
-import Profile from "../screens/Profile";
+import Profile from "../screens/profile/Profile";
 import Scan from "../screens/Scan";
 
 const Tab = createBottomTabNavigator();

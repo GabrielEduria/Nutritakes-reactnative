@@ -14,7 +14,7 @@ type PieChartProps = {
 };
 
 const PieChart: React.FC<PieChartProps> = ({ data, title }) => {
-  const screenWidth = Dimensions.get("window").width * 0.8; // responsive width
+  const screenWidth = Dimensions.get("window").width * 0.8; 
 
   const chartData = data.map((d) => ({
     name: d.name,

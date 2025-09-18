@@ -87,7 +87,13 @@ const handleRegister = async () => {
         </TouchableOpacity>
       </View>
 
-
+        <View style={styles.bottomLink}>
+        <Text style={styles.bottomText}>Already have an account?</Text>
+        <TouchableOpacity onPress={() => router.push("/(auth)/LoginScreen")}>
+          <Text style={styles.loginLink}> Login</Text>
+        </TouchableOpacity>
+      </View>
+    
       <ConfirmationModal
         visible={confirmationVisible}
         message="Registration successful! Please verify your email."
@@ -111,4 +117,7 @@ const styles = StyleSheet.create({
   input: { width: "100%", height: 55, backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 16, marginBottom: 20, borderWidth: 1, borderColor: "#808080" },
   button: { width: "100%", height: 55, backgroundColor: "#FF5C00", borderRadius: 12, justifyContent: "center", alignItems: "center" },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
+  bottomLink: { flexDirection: "row",  alignItems: "center" },
+  bottomText: { fontSize: 14, color: "#333"},
+  loginLink: { fontSize: 14, fontWeight: "600", color: "#FF5C00"}
 });

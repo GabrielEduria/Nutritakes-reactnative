@@ -1,10 +1,9 @@
-
+import { getMeals } from "@/Lib/MealService";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import MacroCard from "../components/cards/MacroCard";
-import recentMeals, { Meal } from "../data/meal"; //dummy textbook // for future reference integrate firestore to display this
-
+import { Meal } from "../data/meal";
 
 export default function Dashboard() {
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -12,34 +11,49 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  
-    setTimeout(() => {
-      setMeals(recentMeals);
-      calculateStats(recentMeals);
-      setLoading(false);
-    }, 500); 
+    const fetchMeals = async () => {
+      try {
+        const mealsData = await getMeals(); 
+        setMeals(mealsData);
+        calculateStats(mealsData);
+      } catch (err) {
+        console.error("Error fetching meals:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMeals();
   }, []);
 
-  const calculateStats = (mealsData: Meal[]) => {
-    const today = new Date();
-    const caloriesToday = mealsData
-      .filter((meal) => {
-        const mealDate = meal.timestamp || new Date();
-        return (
-          mealDate.getDate() === today.getDate() &&
-          mealDate.getMonth() === today.getMonth() &&
-          mealDate.getFullYear() === today.getFullYear()
-        );
-      })
-      .reduce((sum, meal) => sum + (meal.calories || 0), 0);
+      const calculateStats = (mealsData: Meal[]) => {
+        const today = new Date();
 
-    const uniqueDishes = new Set(mealsData.map((meal) => meal.name));
-    setStats({
-      mealsLogged: mealsData.length,
-      caloriesToday,
-      dishesRecognized: uniqueDishes.size,
-    });
-  };
+        const caloriesToday = mealsData
+          .filter((meal) => {
+            if (!meal.timestamp) return false; // skip if no timestamp
+
+            const mealDate =
+              typeof (meal.timestamp as any)?.toDate === "function"
+                ? (meal.timestamp as any).toDate() // Firestore Timestamp
+                : new Date(meal.timestamp); // already a Date
+
+            return (
+              mealDate.getDate() === today.getDate() &&
+              mealDate.getMonth() === today.getMonth() &&
+              mealDate.getFullYear() === today.getFullYear()
+            );
+          })
+          .reduce((sum, meal) => sum + (meal.calories || 0), 0);
+
+        const uniqueDishes = new Set(mealsData.map((meal) => meal.name));
+
+        setStats({
+          mealsLogged: mealsData.length,
+          caloriesToday,
+          dishesRecognized: uniqueDishes.size,
+        });
+      };
 
   if (loading)
     return (
@@ -51,7 +65,7 @@ export default function Dashboard() {
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Stats */}
+
         <Text style={styles.sectionTitle}>Your Stats</Text>
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
@@ -68,12 +82,16 @@ export default function Dashboard() {
           </View>
         </View>
 
-       
+
         <Text style={styles.sectionTitle}>Recent Meals</Text>
         <View style={styles.mealsContainer}>
-          {meals.map((meal, index) => (
-            <MacroCard key={index} meal={meal} />
-          ))}
+          {meals.length > 0 ? (
+            meals.map((meal, index) => <MacroCard key={index} meal={meal} />)
+          ) : (
+            <Text style={{ textAlign: "center", color: "#555" }}>
+              No meals logged yet.
+            </Text>
+          )}
         </View>
       </ScrollView>
     </LinearGradient>
