@@ -1,7 +1,6 @@
 import React from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-// ✅ Add message prop
 type ConfirmationModalProps = {
   visible: boolean;
   message: string;

@@ -1,4 +1,5 @@
-import { getMeals } from "@/Lib/MealService";
+import { auth } from "@/lib/firebase";
+import { getMeals } from "@/lib/MealService";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -10,18 +11,21 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ mealsLogged: 0, caloriesToday: 0, dishesRecognized: 0 });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMeals = async () => {
-      try {
-        const mealsData = await getMeals(); 
-        setMeals(mealsData);
-        calculateStats(mealsData);
-      } catch (err) {
-        console.error("Error fetching meals:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      useEffect(() => {
+        const fetchMeals = async () => {
+          if (!auth.currentUser) return;
+          const firebaseUid = auth.currentUser.uid;
+
+          try {
+            const mealsData = await getMeals(firebaseUid); 
+            setMeals(mealsData);
+            calculateStats(mealsData);
+          } catch (err) {
+            console.error("Error fetching meals:", err);
+          } finally {
+            setLoading(false);
+          }
+        };
 
     fetchMeals();
   }, []);
@@ -31,12 +35,12 @@ export default function Dashboard() {
 
         const caloriesToday = mealsData
           .filter((meal) => {
-            if (!meal.timestamp) return false; // skip if no timestamp
+            if (!meal.timestamp) return false; 
 
             const mealDate =
               typeof (meal.timestamp as any)?.toDate === "function"
-                ? (meal.timestamp as any).toDate() // Firestore Timestamp
-                : new Date(meal.timestamp); // already a Date
+                ? (meal.timestamp as any).toDate() 
+                : new Date(meal.timestamp); 
 
             return (
               mealDate.getDate() === today.getDate() &&

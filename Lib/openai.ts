@@ -59,10 +59,10 @@ Respond only with JSON, no extra text.
     throw new Error("Failed to parse OpenAI response");
   }
 
-  // Extract text content (GPT output) from the API response
+
   const textOutput = data.output?.[0]?.content?.[0]?.text || "{}";
 
-  // Safely parse JSON
+
   let meal: RecognizeMealResponse;
   try {
     meal = JSON.parse(textOutput);

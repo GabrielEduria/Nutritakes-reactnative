@@ -1,4 +1,4 @@
-import { auth, db, storage } from "@/Lib/firebase";
+import { auth, db, storage } from "@/lib/firebase";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { updateProfile as firebaseUpdateProfile } from "firebase/auth";

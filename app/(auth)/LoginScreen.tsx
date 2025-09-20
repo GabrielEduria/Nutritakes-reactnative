@@ -1,150 +1,177 @@
+import { auth } from "@/lib/firebase";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { auth } from "../../Lib/firebase";
-import ErrorModal from "../components/modals/ErrorModal";
-
-const firebaseErrorMessages: Record<string, string> = {
-  "auth/email-already-in-use": "This email is already registered.",
-  "auth/invalid-email": "Please enter a valid email address.",
-  "auth/weak-password": "Password must be at least 6 characters.",
-  "auth/user-not-found": "No account found with this email.",
-  "auth/wrong-password": "Incorrect password. Please try again.",
-};
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
   const router = useRouter();
 
-  const handleError = (err: any) => {
-    const friendlyMessage = err.code ? firebaseErrorMessages[err.code] : "Something went wrong. Please try again.";
-    setErrorMessage(friendlyMessage);
-    setModalVisible(true);
-  };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email.trim()) {
-      setErrorMessage("Email is required.");
-      setModalVisible(true);
+    if (!email || !password) {
+      setError("Please fill out all fields.");
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setErrorMessage("Please enter a valid email address.");
-      setModalVisible(true);
-      return;
-    }
-
-    if (!password) {
-      setErrorMessage("Password is required.");
-      setModalVisible(true);
-      return;
-    }
-
+    setLoading(true);
+    setError("");
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
 
-      if (!user.emailVerified) {
-        setErrorMessage("Please verify your email first. Check your inbox or spam folder.");
-        setModalVisible(true);
-        return;
+      if (userCred.user) {
+       
+        router.replace("/(app)/Home");
       }
-
-      router.replace("/screens/AppLayout");
-    } catch (error: any) {
-      handleError(error);
+    } catch{
+      setError("Invalid email or password. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.container}>
-        <View style={styles.inner}>
-          <Image
-            source={require("@/assets/images/icon/NT.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <LinearGradient
+          colors={["#FFFDD0", "#FFD580", "#FFB347"]}
+          style={styles.background}
+        >
+          <View style={styles.container}>
+            <Image
+              source={require("@/assets/images/icon/NT.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Login </Text>
 
-          <Text style={styles.title}>NutriTakes Login</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email"
+              placeholderTextColor="#777"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#777"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your password"
+              placeholderTextColor="#777"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#777"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+            {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, loading && { opacity: 0.6 }]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? "Logging in..." : "Login"}
+              </Text>
+            </TouchableOpacity>
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don’t have an account? </Text>
-            <Link href="/(auth)/register/NameScreen" style={styles.registerLink}>
-              Register here
-            </Link>
+            <TouchableOpacity style={styles.linkContainer}>
+              <Text style={styles.linkText}>
+                Don’t have an account?{" "}
+                <Text style={styles.linkBold}>
+                  <Link href="/(auth)/RegisterScreen">Sign Up</Link>
+                </Text>
+              </Text>
+            </TouchableOpacity>
           </View>
-        </View>
-      </LinearGradient>
-
-      <ErrorModal
-        visible={modalVisible}
-        message={errorMessage}
-        onClose={() => setModalVisible(false)}
-      />
-    </>
+        </LinearGradient>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  inner: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
-  logo: { width: 140, height: 140, marginBottom: 20 },
-  title: { fontSize: 26, fontWeight: "700", marginBottom: 30, color: "#0d0d0d" },
-  input: {
-    width: "100%",
-    height: 60,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 20,
-    fontSize: 18,
-    borderWidth: 1,
-    borderColor: "#808080",
-  },
-  button: {
-    width: "100%",
-    height: 60,
-    backgroundColor: "#FF5C00",
-    borderRadius: 12,
+  background: { flex: 1 },
+  container: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 10,
-    elevation: 3,
+    padding: 20,
   },
-  buttonText: { fontSize: 20, fontWeight: "600", color: "#fff" },
-  registerContainer: { flexDirection: "row", marginTop: 20 },
-  registerText: { fontSize: 16, color: "#333" },
-  registerLink: { fontSize: 16, fontWeight: "600", color: "#FF5C00" },
+  logo: { width: 140, height: 140, marginBottom: 20 },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#0d0d0d",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 30,
+  },
+  input: {
+    backgroundColor: "#fff",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginBottom: 16,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#808080",
+    width: "100%",
+  },
+  error: {
+    color: "red",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  button: {
+    backgroundColor: "#FF5C00",
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 10,
+    elevation: 2,
+    width: "100%",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  linkContainer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  linkText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  linkBold: {
+    color: "#FF5C00",
+    fontWeight: "700",
+  },
 });

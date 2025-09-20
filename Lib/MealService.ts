@@ -1,62 +1,49 @@
-import { Meal } from "@/app/data/meal";
-import { getAuth } from "firebase/auth";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  serverTimestamp,
-  Timestamp,
-} from "firebase/firestore";
-import { db } from "./firebase";
+import { supabase } from "@/lib/supabase";
 
-
-export const addMeal = async (meal: Omit<Meal, "timestamp">) => {
-  const user = getAuth().currentUser;
-  if (!user) throw new Error("User not authenticated");
-
-  const mealsCol = collection(db, `profiles/${user.uid}/meals`);
-
-  await addDoc(mealsCol, {
-    ...meal,
-    timestamp: serverTimestamp(), 
-  });
+export type Meal = {
+  id?: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fats: number;
+  servings?: number;
+  description?: string;
+  image_url?: string;
+  timestamp?: string;
 };
 
+// Add meal with optional image
+export async function addMeal(meal: Meal, firebaseUid: string) {
+  const { data, error } = await supabase
+    .from("meals")
+    .insert([{ ...meal, user_id: firebaseUid }])
+    .select();
 
-export const getMeals = async (): Promise<Meal[]> => {
-  const user = getAuth().currentUser;
-  if (!user) throw new Error("User not authenticated");
+  if (error) throw error;
+  return data[0];
+}
 
-  const mealsCol = collection(db, `profiles/${user.uid}/meals`);
-  const snapshot = await getDocs(mealsCol);
+// Get meals for a Firebase UID
+export async function getMeals(firebaseUid: string) {
+  const { data, error } = await supabase
+    .from("meals")
+    .select("*")
+    .eq("user_id", firebaseUid)
+    .order("timestamp", { ascending: false });
 
-  return snapshot.docs.map((docSnap) => {
-    const data = docSnap.data();
-
-    return {
-      id: docSnap.id,
-      name: data.name,
-      image: data.image,
-      description: data.description || "",
-      calories: data.calories,
-      protein: data.protein,
-      carbs: data.carbs,
-      fats: data.fats,
-      servings: data.servings,
-      timestamp: data.timestamp
-        ? (data.timestamp as Timestamp).toDate()
-        : new Date(),
-    } as Meal;
-  });
-};
+  if (error) throw error;
+  return data;
+}
 
 
-export const deleteMeal = async (mealId: string) => {
-  const user = getAuth().currentUser;
-  if (!user) throw new Error("User not authenticated");
+export async function deleteMeal(mealId: string, firebaseUid: string) {
+  const { data, error } = await supabase
+    .from("meals")
+    .delete()
+    .eq("id", mealId)
+    .eq("user_id", firebaseUid);
 
-  const mealRef = doc(db, `profiles/${user.uid}/meals/${mealId}`);
-  await deleteDoc(mealRef);
-};
+  if (error) throw error;
+  return data;
+}

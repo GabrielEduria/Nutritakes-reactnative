@@ -1,51 +1,31 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+// app/_layout.tsx
+import SplashScreen from "@/app/SplashScreen";
+import { auth } from "@/lib/firebase";
 import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
-import "react-native-reanimated";
-
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { auth } from "../Lib/firebase";
-import SplashScreen from "./screens/SplashScreen";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [showSplash, setShowSplash] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const [authChecked, setAuthChecked] = useState(false);
-
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      setAuthChecked(true);
+      setLoading(false);
     });
-
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (showSplash || !authChecked) {
-    return <SplashScreen />;
-  }
+  if (loading) return <SplashScreen />;
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {user ? (
-      
-          <Stack.Screen name="screens/AppLayout" options={{ headerShown: false }} />
-        ) : (
-
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        )}
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      {user ? (
+        <Stack.Screen name="(app)" />   
+      ) : (
+        <Stack.Screen name="(auth)" />   
+      )}
+    </Stack>
   );
 }
