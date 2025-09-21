@@ -1,4 +1,3 @@
-// app/_layout.tsx
 import SplashScreen from "@/app/SplashScreen";
 import { auth } from "@/lib/firebase";
 import { Stack } from "expo-router";
@@ -10,6 +9,8 @@ export default function RootLayout() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) return;
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);

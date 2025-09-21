@@ -17,7 +17,7 @@ import {
   View,
 } from "react-native";
 
-// Define the UserProfile type
+
 type UserProfile = {
   name?: string;
   photoURL?: string;
@@ -30,7 +30,6 @@ export default function ProfileScreen() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [meals, setMeals] = useState<Meal[]>([]);
 
   useEffect(() => {

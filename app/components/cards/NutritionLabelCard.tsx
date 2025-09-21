@@ -20,7 +20,7 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        {/* Header */}
+
         <View style={styles.header}>
           <Text style={styles.title}>Nutrition Facts</Text>
           <Text style={styles.appName}>NutriTakes</Text>
@@ -28,14 +28,12 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
 
         <View style={styles.thickLine} />
 
-        {/* Meal Name */}
         <View style={styles.row}>
           <Text style={styles.label}>Name</Text>
           <Text style={styles.value}>{meal.name}</Text>
         </View>
         <View style={styles.line} />
 
-        {/* Calories */}
         <View style={styles.row}>
           <Text style={[styles.label, styles.caloriesLabel]}>Calories</Text>
           <Text style={[styles.value, styles.caloriesValue]}>
@@ -103,7 +101,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
-    width: "90%", // Not full screen
+    width: "90%", 
     elevation: 3,
   },
   header: {

@@ -1,4 +1,3 @@
-// app/(app)/_layout.tsx
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
@@ -30,7 +29,6 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
           }
         })();
 
-        // Center Scan button
         if (route.name === "Scan") {
           return (
             <TouchableOpacity
@@ -105,7 +103,7 @@ const styles = StyleSheet.create({
   scanButtonContainer: {
     flex: 1,
     alignItems: "center",
-    marginTop: -25, // lift above tab bar curve
+    marginTop: -25, 
   },
   scanButton: {
     width: 70,

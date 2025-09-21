@@ -2,7 +2,16 @@ import { recognizeMeal } from "@/lib/openai";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import NutritionLabelCard, { NutritionInfo } from "../components/cards/NutritionLabelCard";
 
 export default function Scan() {
@@ -15,7 +24,8 @@ export default function Scan() {
       ? await ImagePicker.requestMediaLibraryPermissionsAsync()
       : await ImagePicker.requestCameraPermissionsAsync();
 
-    if (!permission.granted) return Alert.alert("Permission required", "Camera or Gallery access required");
+    if (!permission.granted)
+      return Alert.alert("Permission required", "Camera or Gallery access required");
 
     const result = fromGallery
       ? await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.7 })
@@ -44,8 +54,15 @@ export default function Scan() {
 
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.title}>Scan a Meal</Text>
+
+        <Text style={styles.subtitle}>
+          Snap a photo or upload one to analyze its nutrition instantly.
+        </Text>
 
         <View style={styles.actions}>
           <TouchableOpacity style={styles.button} onPress={() => pickImage(false)}>
@@ -56,15 +73,21 @@ export default function Scan() {
           </TouchableOpacity>
         </View>
 
-        {loading && <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 20 }} />}
+        {loading && (
+          <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 30 }} />
+        )}
 
-        {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
+        {imageUri && (
+          <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
+        )}
 
         {meal && (
-          <View style={{ width: "100%", marginTop: 20 }}>
+          <View style={{ width: "100%", marginTop: 25 }}>
             <NutritionLabelCard meal={meal} />
           </View>
         )}
+
+        <View style={{ height: 100 }} />
       </ScrollView>
     </LinearGradient>
   );
@@ -72,17 +95,50 @@ export default function Scan() {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  container: { padding: 20, alignItems: "center" },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 20 },
-  actions: { flexDirection: "row", justifyContent: "space-between", width: "80%" },
-  button: {
-    backgroundColor: "#FF5C00",
-    padding: 14,
-    borderRadius: 12,
-    flex: 1,
-    marginHorizontal: 5,
+  container: {
+    padding: 20,
     alignItems: "center",
   },
-  buttonText: { color: "#fff", fontWeight: "600" },
-  image: { width: 250, height: 250, marginTop: 20, borderRadius: 12 },
+  title: {
+    fontSize: 26,
+    fontWeight: "800",
+    marginBottom: 10,
+    color: "#0d0d0d",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#444",
+    textAlign: "center",
+    marginBottom: 25,
+    paddingHorizontal: 10,
+  },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: "#FF5C00",
+    paddingVertical: 14,
+    borderRadius: 14,
+    flex: 1,
+    marginHorizontal: 8,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
+  },
+  buttonText: { color: "#fff", fontWeight: "600", fontSize: 15 },
+  image: {
+    width: "100%",
+    height: 250,
+    borderRadius: 16,
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
+  },
 });

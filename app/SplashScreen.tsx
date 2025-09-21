@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
 export default function SplashScreen() {
-  const logoAnim = useRef(new Animated.Value(0)).current; // opacity & scale
+  const logoAnim = useRef(new Animated.Value(0)).current; 
 
   useEffect(() => {
     Animated.timing(logoAnim, {
