@@ -42,7 +42,6 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
         </View>
         <View style={styles.thickLine} />
 
-        {/* Macros */}
         <View style={styles.row}>
           <Text style={[styles.label, styles.macroLabel]}>Protein</Text>
           <Text style={[styles.value, styles.macroValue]}>{meal.protein} g</Text>
@@ -78,7 +77,7 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
           </>
         )}
 
-        {/* Description at bottom-left */}
+     
         {meal.description && (
           <>
             <View style={styles.bottomLine} />
@@ -96,6 +95,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     marginVertical: 12,
+    marginBottom: 20
   },
   card: {
     backgroundColor: "#fff",

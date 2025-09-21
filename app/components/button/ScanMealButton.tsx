@@ -1,16 +1,25 @@
-import { Meal } from "@/app/data/meal";
+import { recognizeMeal } from "@/lib/openai";
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, Button, Image, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { NutritionInfo } from "../cards/NutritionLabelCard";
 
 type Props = {
-  onMealSaved?: (meal: Meal) => void; 
+  onMealSaved?: (meal: NutritionInfo) => void;
 };
 
 export default function ScanMealButton({ onMealSaved }: Props) {
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [meal, setMeal] = useState<Meal | null>(null);
+  const [meal, setMeal] = useState<NutritionInfo | null>(null);
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -33,7 +42,7 @@ export default function ScanMealButton({ onMealSaved }: Props) {
   const processImage = async (uri: string) => {
     setLoading(true);
     try {
-      const newMeal = await scanAndSaveMeal(uri);
+      const newMeal = await recognizeMeal(uri);
       setMeal(newMeal);
       if (onMealSaved) onMealSaved(newMeal);
       Alert.alert("Meal saved!", `Logged ${newMeal.name}`);
@@ -47,13 +56,17 @@ export default function ScanMealButton({ onMealSaved }: Props) {
 
   return (
     <View style={styles.container}>
-      <Button title="Scan Meal" onPress={pickImage} />
-      {loading && <ActivityIndicator size="large" style={{ marginTop: 10 }} />}
+      <TouchableOpacity style={styles.button} onPress={pickImage} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? "Scanning..." : "Scan"}</Text>
+      </TouchableOpacity>
+
+      {loading && <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 15 }} />}
+
       {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
+
       {meal && (
         <View style={styles.mealCard}>
           <Text style={styles.mealName}>{meal.name}</Text>
-          <Text>{meal.description}</Text>
           <Text>Calories: {meal.calories}</Text>
           <Text>Protein: {meal.protein}g</Text>
           <Text>Carbs: {meal.carbs}g</Text>
@@ -65,15 +78,31 @@ export default function ScanMealButton({ onMealSaved }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { width: "100%", alignItems: "center", marginVertical: 10 },
-  previewImage: { width: 200, height: 200, marginVertical: 10, borderRadius: 12 },
+  container: { width: "100%", alignItems: "center", marginVertical: 20 },
+  button: {
+    backgroundColor: "#FF5C00",
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 14,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+  },
+  buttonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+  previewImage: {
+    width: 220,
+    height: 220,
+    marginVertical: 15,
+    borderRadius: 14,
+  },
   mealCard: {
     backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 14,
     width: "90%",
     marginTop: 10,
-    elevation: 2,
+    elevation: 3,
   },
-  mealName: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
+  mealName: { fontSize: 18, fontWeight: "700", marginBottom: 6 },
 });

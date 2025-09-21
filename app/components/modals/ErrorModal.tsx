@@ -3,7 +3,7 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type ErrorModalProps = {
   visible: boolean;
-  message: string;
+  message: string | null; 
   onClose: () => void;
 };
 
@@ -13,7 +13,7 @@ export default function ErrorModal({ visible, message, onClose }: ErrorModalProp
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <Text style={styles.title}>Oops!</Text>
-          <Text style={styles.message}>{message}</Text>
+          <Text style={styles.message}>{message ?? ""}</Text>
           <TouchableOpacity style={styles.button} onPress={onClose}>
             <Text style={styles.buttonText}>OK</Text>
           </TouchableOpacity>

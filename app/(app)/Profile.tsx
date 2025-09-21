@@ -1,15 +1,9 @@
-import { Meal } from "@/app/data/meal";
 import { auth } from "@/lib/firebase";
-import {
-  getUserMeals,
-  getUserProfile,
-  sendPasswordReset,
-} from "@/lib/firebaseHelpers";
+import { logout, sendPasswordReset } from "@/lib/firebaseHelpers";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,36 +11,9 @@ import {
   View,
 } from "react-native";
 
-
-type UserProfile = {
-  name?: string;
-  photoURL?: string;
-  createdAt?: any;
-};
-
 export default function ProfileScreen() {
   const router = useRouter();
   const user = auth.currentUser;
-
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  
-  const [meals, setMeals] = useState<Meal[]>([]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    (async () => {
-      try {
-        const data = await getUserProfile(user.uid);
-        setProfile(data);
-
-        const history = await getUserMeals(user.uid);
-        setMeals(history);
-      } catch (err) {
-        console.log("Error fetching profile:", err);
-      }
-    })();
-  }, [user]);
 
   const handleResetPassword = async (): Promise<void> => {
     if (!user?.email) return;
@@ -54,13 +21,8 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = async () => {
-    await auth.signOut();
+    await logout();
     router.replace("/(auth)/LoginScreen");
-  };
-
-  const handleEditProfile = () => {
-    // Instead of pushing to a screen, this could open your EditProfileModal
-    // router.push("/screens/profile/EditProfileScreen");
   };
 
   if (!user) return null;
@@ -71,48 +33,41 @@ export default function ProfileScreen() {
       style={styles.background}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.topSection}>
-          {/* ✅ Avatar as rectangle card */}
-          {profile?.photoURL ? (
-            <Image
-              source={{ uri: profile.photoURL }}
-              style={styles.avatarRect}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={[styles.avatarRect, styles.avatarPlaceholder]}>
-              <Text style={styles.avatarPlaceholderText}>
-                {profile?.name?.charAt(0) ??
-                  user.displayName?.charAt(0) ??
-                  "U"}
-              </Text>
-            </View>
-          )}
-
-          {/* Info Card */}
-          <View style={styles.infoCard}>
-            <Text style={styles.name}>
-              {profile?.name ?? user.displayName ?? "User"}
-            </Text>
-            <Text style={styles.email}>{user.email}</Text>
-            <Text style={styles.verified}>
-              {user.emailVerified ? "Verified ✅" : "Not Verified ❌"}
-            </Text>
-          </View>
+    
+        <View style={styles.infoCard}>
+          <Text style={styles.email}>
+            {user.email ?? "Email Placeholder"}
+          </Text>
+          <Text style={styles.verified}>
+            {user.emailVerified ? "Account Verified ✅" : "Account Not Verified ❌"}
+          </Text>
         </View>
 
-        {/* Actions */}
+     
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.button} onPress={handleEditProfile}>
-            <Text style={styles.buttonText}>Edit Profile</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
             <Text style={styles.buttonText}>Reset Password</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.logout]} onPress={handleLogout}>
+          <TouchableOpacity
+            style={[styles.button, styles.logout]}
+            onPress={handleLogout}
+          >
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
         </View>
+
+
+{/* add meal history later after supabase integration
+        <View style={styles.mealsSection}>
+          <Text style={styles.sectionTitle}>Your Meals</Text>
+          {meals.map((meal) => (
+            <View key={meal.id} style={styles.mealCard}>
+              <Text style={styles.mealName}>{meal.name}</Text>
+              <Text>{meal.calories} kcal</Text>
+              <Text>Protein: {meal.protein}g</Text>
+              <Text>Carbs: {meal.carbs}g</Text>
+              <Text>Fats: {meal.fats}g</Text>
+        </View> */}
       </ScrollView>
     </LinearGradient>
   );
@@ -121,59 +76,31 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   background: { flex: 1 },
   container: {
-    paddingBottom: 40,
+    paddingBottom: 60,
     paddingTop: 20,
     alignItems: "center",
     width: "100%",
   },
-  topSection: {
-    alignItems: "center",
+  infoCard: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 12,
+    textAlign: "left",
     width: "90%",
     marginBottom: 20,
-  },
-  avatarRect: {
-    width: 140,
-    height: 90,
-    borderRadius: 12, // ✅ rounded rectangle, not a circle
-    marginBottom: 16,
-  },
-  avatarPlaceholder: {
-    backgroundColor: "#ccc",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarPlaceholderText: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#555",
-  },
-  infoCard: {
-    backgroundColor: "white",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    width: "100%",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 4,
+    elevation: 5
   },
   email: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 4,
+    color: "#000",
+    fontSize: 16,
+    marginBottom: 6,
   },
   verified: {
-    fontSize: 12,
-    color: "#888",
+    color: "#000",
+    fontSize: 14,
   },
   actions: {
-    marginTop: 20,
+    marginTop: 10,
     width: "90%",
   },
   button: {

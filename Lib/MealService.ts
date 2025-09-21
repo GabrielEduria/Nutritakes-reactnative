@@ -1,45 +1,30 @@
+import { NutritionInfo } from "@/app/components/cards/NutritionLabelCard";
 import { supabase } from "@/lib/supabase";
 
-export type Meal = {
-  id?: string;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fats: number;
-  servings?: number;
-  description?: string;
-  image_url?: string;
-  timestamp?: string;
-};
-
-export async function addMeal(meal: Meal, firebaseUid: string) {
-  const { data, error } = await supabase
-    .from("meals")
-    .insert([{ ...meal, user_id: firebaseUid }])
-    .select();
+export async function saveMeal(userId: string, meal: NutritionInfo) {
+  const { error } = await supabase.from("meals").insert([
+    {
+      user_id: userId, 
+      name: meal.name,
+      calories: meal.calories,
+      protein: meal.protein,
+      carbs: meal.carbs,
+      fats: meal.fats,
+      fiber: meal.fiber,
+      servings: meal.servings,
+      description: meal.description,
+    },
+  ]);
 
   if (error) throw error;
-  return data[0];
 }
 
-export async function getMeals(firebaseUid: string) {
+export async function getMeals(userId: string) {
   const { data, error } = await supabase
     .from("meals")
     .select("*")
-    .eq("user_id", firebaseUid)
-    .order("timestamp", { ascending: false });
-
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteMeal(mealId: string, firebaseUid: string) {
-  const { data, error } = await supabase
-    .from("meals")
-    .delete()
-    .eq("id", mealId)
-    .eq("user_id", firebaseUid);
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
   return data;

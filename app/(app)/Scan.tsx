@@ -1,10 +1,13 @@
+import NutritionLabelCard, { NutritionInfo } from "@/app/components/cards/NutritionLabelCard";
+import ErrorModal from "@/app/components/modals/ErrorModal";
+import { saveMeal } from "@/lib/MealService";
+import { auth } from "@/lib/firebase";
 import { recognizeMeal } from "@/lib/openai";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -12,82 +15,106 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import NutritionLabelCard, { NutritionInfo } from "../components/cards/NutritionLabelCard";
+import SuccessModal from "../components/modals/SuccessModal";
 
 export default function Scan() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // for recognition
+  const [saving, setSaving] = useState(false); // for saving to Supabase
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [meal, setMeal] = useState<NutritionInfo | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const pickImage = async (fromGallery = false) => {
-    const permission = fromGallery
-      ? await ImagePicker.requestMediaLibraryPermissionsAsync()
-      : await ImagePicker.requestCameraPermissionsAsync();
+  const pickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError("Gallery permission is required!");
+      return;
+    }
 
-    if (!permission.granted)
-      return Alert.alert("Permission required", "Camera or Gallery access required");
-
-    const result = fromGallery
-      ? await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.7 })
-      : await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      quality: 0.7,
+    });
 
     if (!result.canceled && result.assets.length > 0) {
       const uri = result.assets[0].uri;
       setImageUri(uri);
-      analyzeMeal(uri);
+      processImage(uri);
     }
   };
 
-  const analyzeMeal = async (uri: string) => {
-    setLoading(true);
+  const processImage = async (uri: string) => {
+    setError(null);
+    setSuccess(null);
     setMeal(null);
+    setLoading(true);
+
+    // 1) Recognize
+    let detected: NutritionInfo;
     try {
-      const detectedMeal = await recognizeMeal(uri);
-      setMeal(detectedMeal);
+      detected = await recognizeMeal(uri);
+      setMeal(detected);
     } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "OpenAI failed to detect meal");
+      console.error("Recognition error:", err);
+      setError("Failed to analyze the image. Try again.");
+      setLoading(false);
+      return;
     } finally {
       setLoading(false);
+    }
+
+    // 2) Try to save if user logged in
+    const user = auth.currentUser;
+    if (!user) {
+      setSuccess(`Detected: ${detected.name} (not saved — sign in to save).`);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await saveMeal(user.uid, detected);
+      setSuccess(`Meal saved! Logged ${detected.name}`);
+    } catch (err) {
+      console.error("Save error:", err);
+      setError("Detected meal but failed to save to server. Try again.");
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.title}>Scan a Meal</Text>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Scan Your Meal</Text>
 
-        <Text style={styles.subtitle}>
-          Snap a photo or upload one to analyze its nutrition instantly.
-        </Text>
+        <TouchableOpacity
+          style={[styles.button, (loading || saving) && { opacity: 0.7 }]}
+          onPress={pickImage}
+          disabled={loading || saving}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? "Analyzing..." : saving ? "Saving..." : "Pick from Gallery"}
+          </Text>
+        </TouchableOpacity>
 
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.button} onPress={() => pickImage(false)}>
-            <Text style={styles.buttonText}>Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => pickImage(true)}>
-            <Text style={styles.buttonText}>Gallery</Text>
-          </TouchableOpacity>
-        </View>
-
-        {loading && (
-          <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 30 }} />
+        {(loading || saving) && (
+          <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 18 }} />
         )}
 
-        {imageUri && (
-          <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
-        )}
+        {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
 
         {meal && (
-          <View style={{ width: "100%", marginTop: 25 }}>
+          <View style={styles.cardWrapper}>
             <NutritionLabelCard meal={meal} />
           </View>
         )}
 
+       
         <View style={{ height: 100 }} />
+
+        <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
+        <SuccessModal visible={!!success} message={success ?? ""} onClose={() => setSuccess(null)} />
       </ScrollView>
     </LinearGradient>
   );
@@ -96,49 +123,39 @@ export default function Scan() {
 const styles = StyleSheet.create({
   background: { flex: 1 },
   container: {
-    padding: 20,
+    paddingBottom: 40,
+    paddingTop: 30,
     alignItems: "center",
+    width: "100%",
   },
   title: {
-    fontSize: 26,
-    fontWeight: "800",
-    marginBottom: 10,
-    color: "#0d0d0d",
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#444",
-    textAlign: "center",
-    marginBottom: 25,
-    paddingHorizontal: 10,
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "90%",
-    marginBottom: 20,
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 16,
+    color: "#333",
   },
   button: {
-    backgroundColor: "#FF5C00",
+    backgroundColor: "#FF914D",
     paddingVertical: 14,
-    borderRadius: 14,
-    flex: 1,
-    marginHorizontal: 8,
+    paddingHorizontal: 28,
+    borderRadius: 12,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 4,
+    marginBottom: 20,
+    elevation: 3,
   },
-  buttonText: { color: "#fff", fontWeight: "600", fontSize: 15 },
-  image: {
-    width: "100%",
-    height: 250,
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  previewImage: {
+    width: 240,
+    height: 240,
     borderRadius: 16,
-    marginTop: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
+    marginVertical: 20,
+  },
+  cardWrapper: {
+    width: "90%",
+    alignItems: "center",
   },
 });
