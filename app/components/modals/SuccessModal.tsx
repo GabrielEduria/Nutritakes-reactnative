@@ -12,7 +12,7 @@ export default function SuccessModal({ visible, message, onClose }: SuccessModal
     <Modal transparent visible={visible} animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          <Text style={styles.title}>Sucessfully logged</Text>
+          <Text style={styles.title}>Success</Text>
           <Text style={styles.message}>{message}</Text>
           <TouchableOpacity style={styles.button} onPress={onClose}>
             <Text style={styles.buttonText}>OK</Text>

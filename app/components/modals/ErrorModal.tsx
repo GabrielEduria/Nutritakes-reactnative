@@ -12,7 +12,7 @@ export default function ErrorModal({ visible, message, onClose }: ErrorModalProp
     <Modal transparent visible={visible} animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          <Text style={styles.title}>Oops!</Text>
+          <Text style={styles.title}>Oooppss</Text>
           <Text style={styles.message}>{message ?? ""}</Text>
           <TouchableOpacity style={styles.button} onPress={onClose}>
             <Text style={styles.buttonText}>OK</Text>
