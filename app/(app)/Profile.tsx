@@ -1,27 +1,33 @@
 import { auth } from "@/lib/firebase";
-import { logout, sendPasswordReset } from "@/lib/firebaseHelpers";
+import { sendPasswordReset } from "@/lib/firebaseHelpers";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useState } from "react";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import ErrorModal from "../components/modals/ErrorModal";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const user = auth.currentUser;
 
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
   const handleResetPassword = async (): Promise<void> => {
-    if (!user?.email) return;
-    await sendPasswordReset(user.email);
+    if (!user?.email) return setError("No email found for this account");
+
+    try {
+      await sendPasswordReset(user.email);
+      setSuccess("Password reset email sent successfully!");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to send password reset email. Try again.");
+    }
   };
 
   const handleLogout = async () => {
-    await logout();
+    if (!auth) return;
+    await auth.signOut();
     router.replace("/(auth)/LoginScreen");
   };
 
@@ -56,7 +62,8 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-
+        <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
+        <ErrorModal visible={!!success} message={success ?? ""} onClose={() => setSuccess(null)} />
 {/* add meal history later after supabase integration
         <View style={styles.mealsSection}>
           <Text style={styles.sectionTitle}>Your Meals</Text>

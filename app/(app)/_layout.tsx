@@ -37,7 +37,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
               style={styles.scanButtonContainer}
             >
               <View style={styles.scanButton}>
-                <Ionicons name={icon} size={32} color="#fff" />
+                <Ionicons name={icon} size={28} color="#fff" />
               </View>
             </TouchableOpacity>
           );
@@ -49,8 +49,18 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
             onPress={onPress}
             style={styles.tabButton}
           >
-            <Ionicons name={icon} size={24} color={isFocused ? "#FF5C00" : "#777"} />
-            <Text style={{ color: isFocused ? "#FF5C00" : "#777", fontSize: 12 }}>
+            <Ionicons
+              name={icon}
+              size={24}
+              color={isFocused ? "#FF5C00" : "#777"}
+            />
+            <Text
+              style={{
+                color: isFocused ? "#FF5C00" : "#777",
+                fontSize: 12,
+                marginTop: 2,
+              }}
+            >
               {options.title}
             </Text>
           </TouchableOpacity>
@@ -82,7 +92,7 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
     height: 70,
-    backgroundColor: "#FFD580",
+    backgroundColor: "#FFD580", // solid background
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     shadowColor: "#000",
@@ -103,18 +113,19 @@ const styles = StyleSheet.create({
   scanButtonContainer: {
     flex: 1,
     alignItems: "center",
-    marginTop: -25, 
+    marginTop: -20, // keeps the middle curve effect
   },
   scanButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 60, // slightly smaller than before
+    height: 40,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     backgroundColor: "#FF5C00",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 5,
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
   },
 });
