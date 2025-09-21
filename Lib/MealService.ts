@@ -13,7 +13,6 @@ export type Meal = {
   timestamp?: string;
 };
 
-// Add meal with optional image
 export async function addMeal(meal: Meal, firebaseUid: string) {
   const { data, error } = await supabase
     .from("meals")
@@ -24,7 +23,6 @@ export async function addMeal(meal: Meal, firebaseUid: string) {
   return data[0];
 }
 
-// Get meals for a Firebase UID
 export async function getMeals(firebaseUid: string) {
   const { data, error } = await supabase
     .from("meals")
@@ -35,7 +33,6 @@ export async function getMeals(firebaseUid: string) {
   if (error) throw error;
   return data;
 }
-
 
 export async function deleteMeal(mealId: string, firebaseUid: string) {
   const { data, error } = await supabase

@@ -1,6 +1,66 @@
+// app/(app)/_layout.tsx
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+const CustomTabBar = ({ state, descriptors, navigation }: any) => {
+  return (
+    <View style={styles.tabBar}>
+      {state.routes.map((route: any, index: number) => {
+        const { options } = descriptors[route.key];
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          if (!isFocused) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        const icon = (() => {
+          switch (route.name) {
+            case "Home":
+              return "home-outline";
+            case "Profile":
+              return "person-outline";
+            case "Scan":
+              return "camera-outline";
+            default:
+              return "ellipse-outline";
+          }
+        })();
+
+        // Center Scan button
+        if (route.name === "Scan") {
+          return (
+            <TouchableOpacity
+              key={route.key}
+              onPress={onPress}
+              style={styles.scanButtonContainer}
+            >
+              <View style={styles.scanButton}>
+                <Ionicons name={icon} size={32} color="#fff" />
+              </View>
+            </TouchableOpacity>
+          );
+        }
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            onPress={onPress}
+            style={styles.tabButton}
+          >
+            <Ionicons name={icon} size={24} color={isFocused ? "#FF5C00" : "#777"} />
+            <Text style={{ color: isFocused ? "#FF5C00" : "#777", fontSize: 12 }}>
+              {options.title}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
 
 export default function AppLayout() {
   return (
@@ -9,47 +69,54 @@ export default function AppLayout() {
         headerShown: true,
         headerStyle: { backgroundColor: "#FFD580" },
         headerTintColor: "#0d0d0d",
-        tabBarActiveTintColor: "#FF5C00",
-        tabBarInactiveTintColor: "#777",
-        tabBarStyle: { height: 70, paddingBottom: 10 },
+        tabBarStyle: { height: 70, backgroundColor: "transparent" }, // hide default
       }}
+      tabBar={(props) => <CustomTabBar {...props} />}
     >
-      <Tabs.Screen
-        name="Home"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="Dashboard"
-        options={{
-          title: "Dashboard",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="Scan"
-        options={{
-          title: "Scan",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="camera-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="Profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="Home" options={{ title: "Home" }} />
+      <Tabs.Screen name="Scan" options={{ title: "Scan" }} />
+      <Tabs.Screen name="Profile" options={{ title: "Profile" }} />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    flexDirection: "row",
+    height: 70,
+    backgroundColor: "#FFD580",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: -3 },
+    shadowRadius: 5,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "space-between",
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: "center",
+  },
+  scanButtonContainer: {
+    flex: 1,
+    alignItems: "center",
+    marginTop: -25, // lift above tab bar curve
+  },
+  scanButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "#FF5C00",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 5,
+  },
+});
