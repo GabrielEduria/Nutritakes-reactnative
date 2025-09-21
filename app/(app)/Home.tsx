@@ -1,71 +1,35 @@
-import { recognizeMeal } from "@/lib/openai";
-import { LinearGradient } from "expo-linear-gradient";
-
-import React, { useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, StyleSheet } from "react-native";
-import NutritionLabelCard, { NutritionInfo } from "../components/cards/NutritionLabelCard";
-import PieChart from "../components/charts/PieChart";
-import ErrorModal from "../components/modals/ErrorModal";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Home() {
-
-  const [meal, setMeal] = useState<NutritionInfo | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-
-
-  const analyzeMeal = async (uri: string) => {
-    setLoading(true);
-    setMeal(null);
-    setShowModal(false);
-
-    try {
-      const detectedMeal = await recognizeMeal(uri);
-      if (!detectedMeal.isFilipino) setShowModal(true);
-      setMeal(detectedMeal);
-    } catch (err) {
-      console.error("Error recognizing meal:", err);
-      Alert.alert("Error", "Failed to analyze the meal. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const router = useRouter();
+  const params = useLocalSearchParams<{ welcome?: string }>();
 
   return (
-    <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
-      <ScrollView contentContainerStyle={styles.container}>
-        {loading && <ActivityIndicator size="large" color="#FF5C00" style={{ marginVertical: 20 }} />}
+    <View style={styles.container}>
+      <Text style={styles.title}>Welcome to NutriTakes!</Text>
+      {params.welcome && (
+        <Text style={styles.subtitle}>Message: {params.welcome}</Text>
+      )}
 
-        {meal && (
-          <>
-            <NutritionLabelCard meal={meal} />
-            <PieChart
-              data={[
-                { name: "Protein", value: meal.protein, color: "#FF6384" },
-                { name: "Carbs", value: meal.carbs, color: "#36A2EB" },
-                { name: "Fats", value: meal.fats, color: "#FFCE56" },
-              ]}
-             
-            />
-          </>
-        )}
-
-        {showModal && (
-          <ErrorModal
-            visible={true}
-            message="Sorry, only Filipino food is supported!"
-            onClose={() => setShowModal(false)}
-          />
-        )}
-      </ScrollView>
-    </LinearGradient>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push("/Scan")}
+      >
+        <Text style={styles.buttonText}>Scan a Meal</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1 },
-  container: {
-    padding: 20,
-    alignItems: "center",
+  container: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 12 },
+  subtitle: { fontSize: 16, marginBottom: 20 },
+  button: {
+    backgroundColor: "#FF5C00",
+    padding: 14,
+    borderRadius: 10,
   },
+  buttonText: { color: "#fff", fontWeight: "600" },
 });
