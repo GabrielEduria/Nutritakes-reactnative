@@ -32,15 +32,28 @@ export default function AuthLayout() {
   }, []);
 
 
-  useEffect(() => {
-    if (!loading) {
-      if (session?.user) {
-        router.replace("/(app)/Home");
-      } else {
-        router.replace("/(auth)/LoginScreen"); 
+    useEffect(() => {
+      if (!loading) {
+        if (session?.user) {
+          const checkProfile = async () => {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("age, gender, weight, height, goal")
+              .eq("id", session.user.id)
+              .single();
+
+            if (!profile || !profile.age || !profile.gender) {
+              router.replace("/(auth)/onboarding");
+            } else {
+              router.replace("/(app)/Home");
+            }
+          };
+          checkProfile();
+        } else {
+          router.replace("/(auth)/LoginScreen");
+        }
       }
-    }
-  }, [loading, session, router]);
+    }, [loading, session, router]);
 
 
   if (loading) return <SplashScreen />;

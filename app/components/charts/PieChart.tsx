@@ -1,3 +1,4 @@
+// components/charts/PieChart.tsx
 import React from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { PieChart as RNPieChart } from "react-native-chart-kit";
@@ -8,20 +9,20 @@ export type PieChartData = {
   color: string;
 };
 
-type PieChartProps = {
+type Props = {
   data: PieChartData[];
   title?: string;
 };
 
-const PieChart: React.FC<PieChartProps> = ({ data, title }) => {
-  const screenWidth = Dimensions.get("window").width * 0.8; 
+const PieChart: React.FC<Props> = ({ data, title }) => {
+  const screenWidth = Dimensions.get("window").width * 0.8;
 
   const chartData = data.map((d) => ({
     name: d.name,
     population: d.value,
     color: d.color,
     legendFontColor: "#333",
-    legendFontSize: 12,
+    legendFontSize: 13,
   }));
 
   return (
@@ -30,19 +31,17 @@ const PieChart: React.FC<PieChartProps> = ({ data, title }) => {
       <RNPieChart
         data={chartData}
         width={screenWidth}
-        height={180}
+        height={200}
         chartConfig={{
-          backgroundColor: "#fff",
           backgroundGradientFrom: "#fff",
           backgroundGradientTo: "#fff",
-          color: (opacity = 1) => `rgba(0,0,0, ${opacity})`,
-          labelColor: (opacity = 1) => `rgba(0,0,0, ${opacity})`,
+          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
         }}
         accessor="population"
         backgroundColor="transparent"
-        paddingLeft="0"
+        paddingLeft="15"
         absolute
-        hasLegend={true}
       />
     </View>
   );
@@ -51,11 +50,11 @@ const PieChart: React.FC<PieChartProps> = ({ data, title }) => {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    marginVertical: 8,
+    marginVertical: 12,
   },
   title: {
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "700",
     marginBottom: 8,
     textAlign: "center",
   },

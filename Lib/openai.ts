@@ -33,7 +33,7 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4.1",
         input: [
           {
             role: "user",
@@ -41,8 +41,9 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
               {
                 type: "input_text",
                 text: `
-                  You are a Filipino cuisine macro expert. Identify ONLY the Filipino food in this image. 
-                  Return valid JSON ONLY:
+                  You are a Filipino cuisine nutrition expert.
+                  Identify ONLY Filipino dishes in this image, including the specific meat or protein source.
+                  Return strictly valid JSON in this format:
                   {
                     "name": "string",
                     "calories": number,
@@ -53,8 +54,8 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
                     "servings": number,
                     "description": "string"
                   }
-                  If the food is NOT Filipino, respond with "NOT_FILIPINO".
-                  Respond ONLY with JSON or NOT_FILIPINO.
+                  If the food is NOT Filipino, respond exactly with "NOT_FILIPINO".
+                  Do not include explanations, extra text, or code blocks — only valid JSON or NOT_FILIPINO.
                 `,
               },
               { type: "input_image", image_url: imageDataUrl },
@@ -72,10 +73,10 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
       throw new NotFilipinoFoodError("This food is not Filipino.");
     }
 
-    // Parse GPT JSON safely
+
     const mealData = JSON.parse(textOutput);
 
-    // Return as MealWithId, adding defaults and UUID
+
     const meal: MealWithId = {
       id: uuidv4(),
       name: mealData.name || "Unknown Meal",
@@ -95,7 +96,7 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
     console.error("OpenAI recognizeMeal error:", err);
     if (err instanceof NotFilipinoFoodError) throw err;
 
-    // Fallback meal object
+
     return {
       id: uuidv4(),
       name: "Unknown Meal",

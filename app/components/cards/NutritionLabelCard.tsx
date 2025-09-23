@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#555",
+    color: "#FF5C00",
   },
   row: {
     flexDirection: "row",

@@ -1,35 +1,134 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Analysis from "@/app/components/analysis/Analysis";
+import WeeklyGoalCard from "@/app/components/cards/WeeklyGoalCard";
+import Dashboard from "@/app/components/dashboard/Dashboard";
+import ErrorModal from "@/app/components/modals/ErrorModal";
+import { supabase } from "@/lib/supabase";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+
+type Macros = { protein: number; carbs: number; fats: number; calories: number };
 
 export default function Home() {
-  const router = useRouter();
-  const params = useLocalSearchParams<{ welcome?: string }>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [macros, setMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, calories: 0 });
+
+  useEffect(() => {
+    let channel: any = null;
+
+    const fetchTodayMacros = async () => {
+      try {
+        setLoading(true);
+        const userRes = await supabase.auth.getUser();
+        const userId = userRes?.data?.user?.id;
+        if (!userId) throw new Error("User not logged in");
+
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const { data: meals, error: mealsError } = await supabase
+          .from("meals")
+          .select("protein,carbs,fats,calories,created_at")
+          .eq("user_id", userId)
+          .gte("created_at", startOfDay.toISOString())
+          .order("created_at", { ascending: false });
+
+        if (mealsError) throw mealsError;
+
+        const totals = (meals || []).reduce(
+          (acc: Macros, meal: any) => ({
+            protein: acc.protein + (meal.protein || 0),
+            carbs: acc.carbs + (meal.carbs || 0),
+            fats: acc.fats + (meal.fats || 0),
+            calories: acc.calories + (meal.calories || 0),
+          }),
+          { protein: 0, carbs: 0, fats: 0, calories: 0 }
+        );
+
+        setMacros(totals);
+
+        if (!channel) {
+          channel = supabase
+            .channel(`meals_today:${userId}`)
+            .on(
+              "postgres_changes",
+              { event: "*", schema: "public", table: "meals", filter: `user_id=eq.${userId}` },
+              () => fetchTodayMacros()
+            )
+            .subscribe();
+        }
+      } catch (err: any) {
+        console.error("Home fetchTodayMacros error:", err);
+        setError(err.message || "Failed to load dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTodayMacros();
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome to NutriTakes!</Text>
-      {params.welcome && (
-        <Text style={styles.subtitle}>Message: {params.welcome}</Text>
-      )}
+    <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.header}>Welcome to NutriTakes!</Text>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push("/Scan")}
-      >
-        <Text style={styles.buttonText}>Scan a Meal</Text>
-      </TouchableOpacity>
-    </View>
+        {loading ? (
+          <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 40 }} />
+        ) : (
+          <>
+            <WeeklyGoalCard />
+
+            <Analysis />
+
+            <View style={styles.card}>
+              <Dashboard macros={macros} />
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Eating Activity</Text>
+              <Text style={styles.cardText}>
+                Today: {macros.calories} kcal • {macros.protein}g protein • {macros.carbs}g carbs •{" "}
+                {macros.fats}g fats
+              </Text>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Upcoming Features</Text>
+              <Text style={styles.cardText}>New widgets and insights will appear here.</Text>
+            </View>
+          </>
+        )}
+
+        <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 12 },
-  subtitle: { fontSize: 16, marginBottom: 20 },
-  button: {
-    backgroundColor: "#FF5C00",
-    padding: 14,
-    borderRadius: 10,
+  background: { flex: 1 },
+  container: { flexGrow: 1, padding: 16, alignItems: "center" },
+  header: { fontSize: 24, fontWeight: "700", color: "#0d0d0d", marginBottom: 16, textAlign: "center" },
+
+  card: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    marginVertical: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  buttonText: { color: "#fff", fontWeight: "600" },
+
+  cardTitle: { fontSize: 18, fontWeight: "700", marginBottom: 8 },
+  cardText: { fontSize: 14, color: "#333" },
 });
