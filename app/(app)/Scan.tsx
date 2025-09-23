@@ -2,7 +2,9 @@ import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from "uuid";
+
 
 import NutritionLabelCard, { NutritionInfo } from "@/app/components/cards/NutritionLabelCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";

@@ -1,22 +1,29 @@
 import SplashScreen from "@/app/SplashScreen";
 import { supabase } from "@/lib/supabase";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 
 export default function AuthLayout() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
+  const router = useRouter();
+
 
   useEffect(() => {
-  
-    const initAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setLoading(false);
+    const loadSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+      } catch (err) {
+        console.error("Failed to get session:", err);
+        setSession(null);
+      } finally {
+        setLoading(false);
+      }
     };
-    initAuth();
+    loadSession();
 
- 
+   
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
     });
@@ -24,18 +31,24 @@ export default function AuthLayout() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+
+  useEffect(() => {
+    if (!loading) {
+      if (session?.user) {
+        router.replace("/(app)/Home");
+      } else {
+        router.replace("/(auth)/LoginScreen"); 
+      }
+    }
+  }, [loading, session, router]);
+
+
   if (loading) return <SplashScreen />;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {!session ? (
-        <>
-          <Stack.Screen name="LoginScreen" />
-          <Stack.Screen name="RegisterScreen" />
-        </>
-      ) : (
-        <Stack.Screen name="(app)" />
-      )}
+      <Stack.Screen name="LoginScreen" />
+      <Stack.Screen name="RegisterScreen" />
     </Stack>
   );
 }

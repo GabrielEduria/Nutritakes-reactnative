@@ -1,6 +1,8 @@
+import SplashScreen from "@/app/SplashScreen";
+import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const CustomTabBar = ({ state, descriptors, navigation }: any) => {
@@ -71,13 +73,34 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
 };
 
 export default function AppLayout() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setLoading(false);
+    };
+    checkUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  if (loading) return <SplashScreen />; 
+  if (!user) return null; 
+
   return (
     <Tabs
       screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: "#FFD580" },
         headerTintColor: "#0d0d0d",
-        tabBarStyle: { height: 70, backgroundColor: "transparent" }, 
+        tabBarStyle: { height: 70, backgroundColor: "transparent" },
       }}
       tabBar={(props) => <CustomTabBar {...props} />}
     >
@@ -113,7 +136,7 @@ const styles = StyleSheet.create({
   scanButtonContainer: {
     flex: 1,
     alignItems: "center",
-    marginTop: -20, 
+    marginTop: -20,
   },
   scanButton: {
     width: 60,
