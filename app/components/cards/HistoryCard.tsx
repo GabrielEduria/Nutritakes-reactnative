@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import NutritionLabelCard, { NutritionInfo } from "./NutritionLabelCard";
+import NutritionLabelCard, { MealWithId } from "./NutritionLabelCard";
 
 type HistoryCardProps = {
-  meal: NutritionInfo & { image_url?: string }; 
-  onDelete?: (meal: NutritionInfo) => void;
+  meal: MealWithId;
+  onDelete?: (meal: MealWithId) => void;
 };
 
 const HistoryCard: React.FC<HistoryCardProps> = ({ meal, onDelete }) => {

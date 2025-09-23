@@ -12,15 +12,20 @@ export type NutritionInfo = {
   description?: string;
 };
 
+export type MealWithId = NutritionInfo & {
+  id: string;
+  image_url?: string;
+};
+
 type NutritionLabelCardProps = {
-  meal: NutritionInfo;
+  meal: MealWithId;
 };
 
 const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-
+      
         <View style={styles.header}>
           <Text style={styles.title}>Nutrition Facts</Text>
           <Text style={styles.appName}>NutriTakes</Text>
@@ -44,7 +49,9 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
 
         <View style={styles.row}>
           <Text style={[styles.label, styles.macroLabel]}>Protein</Text>
-          <Text style={[styles.value, styles.macroValue]}>{meal.protein} g</Text>
+          <Text style={[styles.value, styles.macroValue]}>
+            {meal.protein} g
+          </Text>
         </View>
         <View style={styles.line} />
 
@@ -58,13 +65,15 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
           <Text style={[styles.label, styles.macroLabel]}>Fats</Text>
           <Text style={[styles.value, styles.macroValue]}>{meal.fats} g</Text>
         </View>
-        {meal.fiber !== undefined && <View style={styles.line} />}
 
         {meal.fiber !== undefined && (
-          <View style={styles.row}>
-            <Text style={styles.label}>Fiber</Text>
-            <Text style={styles.value}>{meal.fiber} g</Text>
-          </View>
+          <>
+            <View style={styles.line} />
+            <View style={styles.row}>
+              <Text style={styles.label}>Fiber</Text>
+              <Text style={styles.value}>{meal.fiber} g</Text>
+            </View>
+          </>
         )}
 
         {meal.servings !== undefined && (
@@ -77,7 +86,6 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
           </>
         )}
 
-     
         {meal.description && (
           <>
             <View style={styles.bottomLine} />
@@ -95,13 +103,13 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     marginVertical: 12,
-    marginBottom: 20
+    marginBottom: 20,
   },
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
-    width: "90%", 
+    width: "90%",
     elevation: 3,
   },
   header: {

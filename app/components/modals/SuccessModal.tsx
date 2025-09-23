@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 10,
-    color: "#2e7d32", 
+    color: "#FF5C00", 
   },
   message: {
     fontSize: 16,
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   button: {
-    backgroundColor: "#2e7d32",
+    backgroundColor: "#FF5C00",
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,

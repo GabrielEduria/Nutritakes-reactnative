@@ -1,31 +1,39 @@
-import { NutritionInfo } from "@/app/components/cards/NutritionLabelCard";
+// lib/MealService.ts
+import { MealWithId } from "@/app/(app)/Profile";
 import { supabase } from "@/lib/supabase";
 
-export async function saveMeal(userId: string, meal: NutritionInfo) {
-  const { error } = await supabase.from("meals").insert([
-    {
-      user_id: userId, 
-      name: meal.name,
-      calories: meal.calories,
-      protein: meal.protein,
-      carbs: meal.carbs,
-      fats: meal.fats,
-      fiber: meal.fiber,
-      servings: meal.servings,
-      description: meal.description,
-    },
-  ]);
+/**
+ * Save a meal to Supabase for each auth'dd users
+ * @param meal 
+ */
+export async function saveMeal(meal: MealWithId) {
+  const { data } = await supabase.auth.getSession();
+  const userId = data?.session?.user?.id;
+  if (!userId) throw new Error("Not authenticated");
+
+  const { error } = await supabase
+    .from("meals")
+    .insert([{ ...meal, user_id: userId }]);
 
   if (error) throw error;
+  return true;
 }
 
-export async function getMeals(userId: string) {
-  const { data, error } = await supabase
+/**
+ * Delete a meal by ID each auth'dd user
+ * @param mealId string
+ */
+export async function deleteMeal(mealId: string) {
+  const { data } = await supabase.auth.getSession();
+  const userId = data?.session?.user?.id;
+  if (!userId) throw new Error("Not authenticated");
+
+  const { error } = await supabase
     .from("meals")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .delete()
+    .eq("id", mealId)
+    .eq("user_id", userId);
 
   if (error) throw error;
-  return data;
+  return true;
 }

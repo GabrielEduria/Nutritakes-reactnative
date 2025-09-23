@@ -77,7 +77,7 @@ export default function AppLayout() {
         headerShown: true,
         headerStyle: { backgroundColor: "#FFD580" },
         headerTintColor: "#0d0d0d",
-        tabBarStyle: { height: 70, backgroundColor: "transparent" }, // hide default
+        tabBarStyle: { height: 70, backgroundColor: "transparent" }, 
       }}
       tabBar={(props) => <CustomTabBar {...props} />}
     >
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
     height: 70,
-    backgroundColor: "#FFD580", // solid background
+    backgroundColor: "#FFD580",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     shadowColor: "#000",
@@ -113,10 +113,10 @@ const styles = StyleSheet.create({
   scanButtonContainer: {
     flex: 1,
     alignItems: "center",
-    marginTop: -20, // keeps the middle curve effect
+    marginTop: -20, 
   },
   scanButton: {
-    width: 60, // slightly smaller than before
+    width: 60,
     height: 40,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

@@ -1,18 +1,17 @@
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import React, { useState } from "react";
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import ConfirmationModal from "@/app/components/modals/ConfirmationModal";
@@ -26,27 +25,22 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
 
-  const handleRegister = async () => {
-    if (!email || !password) {
-      setError("Please fill out all fields.");
-      return;
-    }
+const handleRegister = async () => {
+  if (!email || !password) return setError("Please fill out all fields.");
 
-    setLoading(true);
-    setError("");
-    try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+  setLoading(true);
+  setError("");
 
-      if (userCred.user) {
-        await sendEmailVerification(userCred.user); 
-        setShowVerifyModal(true); 
-      }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { error } = await supabase.auth.signUp({ email, password });
+
+  if (error) {
+    setError(error.message);
+  } else {
+    setShowVerifyModal(true); 
+  }
+
+  setLoading(false);
+};
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>

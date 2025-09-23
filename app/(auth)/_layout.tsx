@@ -1,32 +1,41 @@
 import SplashScreen from "@/app/SplashScreen";
-import { auth } from "@/lib/firebase";
-import { Stack, useRouter } from "expo-router";
-import { onAuthStateChanged } from "firebase/auth";
+import { supabase } from "@/lib/supabase";
+import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 
 export default function AuthLayout() {
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+  
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
       setLoading(false);
+    };
+    initAuth();
 
-      if (firebaseUser) {
-        router.replace("/(app)");
-      }
+ 
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
     });
-    return unsubscribe;
-  }, [router]);
 
-  if (loading) {
-    return <SplashScreen />;
-  }
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  if (loading) return <SplashScreen />;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="LoginScreen" />
-      <Stack.Screen name="RegisterScreen" />
+      {!session ? (
+        <>
+          <Stack.Screen name="LoginScreen" />
+          <Stack.Screen name="RegisterScreen" />
+        </>
+      ) : (
+        <Stack.Screen name="(app)" />
+      )}
     </Stack>
   );
 }

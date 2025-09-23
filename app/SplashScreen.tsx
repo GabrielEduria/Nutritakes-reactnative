@@ -10,7 +10,7 @@ export default function SplashScreen() {
       duration: 1500,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [logoAnim]);
 
   return (
     <View style={styles.container}>
