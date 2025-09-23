@@ -25,18 +25,28 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
 
+
 const handleRegister = async () => {
-  if (!email || !password) return setError("Please fill out all fields.");
+  if (!email || !password) {
+    setError("Please fill out all fields.");
+    return;
+  }
 
   setLoading(true);
   setError("");
 
-  const { error } = await supabase.auth.signUp({ email, password });
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: 'nutritakes://auth/confirm',
+    },
+  });
 
   if (error) {
     setError(error.message);
   } else {
-    setShowVerifyModal(true); 
+    setShowVerifyModal(true);
   }
 
   setLoading(false);
