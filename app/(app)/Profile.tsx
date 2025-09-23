@@ -47,28 +47,29 @@ export default function ProfileScreen() {
   }, []);
 
 
-  useEffect(() => {
-    if (!user?.id) return;
+    useEffect(() => {
+      if (!user?.id) return;
 
-    const fetchMeals = async () => {
-      setLoadingMeals(true);
-      const { data, error } = await supabase
-        .from("meals")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+      const fetchMeals = async () => {
+        setLoadingMeals(true);
+        const { data, error } = await supabase
+          .from("meals")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error(error);
-        setError("Failed to fetch meals.");
-      } else {
-        setMeals(data as MealWithId[]);
-      }
-      setLoadingMeals(false);
-    };
+        console.log("Meals fetched for user:", data, error); 
 
-    fetchMeals();
-  }, [user?.id]);
+        if (error) {
+          setError("Failed to fetch meals.");
+        } else {
+          setMeals(data as MealWithId[]);
+        }
+        setLoadingMeals(false);
+      };
+
+      fetchMeals();
+    }, [user?.id]);
 
   
   const handleDelete = (meal: MealWithId) => {
