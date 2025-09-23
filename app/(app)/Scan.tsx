@@ -5,7 +5,6 @@ import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacit
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from "uuid";
 
-
 import NutritionLabelCard, { NutritionInfo } from "@/app/components/cards/NutritionLabelCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";
 import SuccessModal from "@/app/components/modals/SuccessModal";
@@ -15,11 +14,11 @@ import { MealWithId } from "./Profile";
 
 export default function Scan() {
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [meal, setMeal] = useState<MealWithId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -39,23 +38,41 @@ export default function Scan() {
     setSuccess(null);
     setMeal(null);
 
-    let detected: NutritionInfo;
     try {
-      detected = await recognizeMeal(uri);
-
+      const detected: NutritionInfo = await recognizeMeal(uri);
       const detectedWithId: MealWithId = { id: uuidv4(), ...detected, image_url: uri };
       setMeal(detectedWithId);
-
-      setSaving(true);
-      await saveMeal(detectedWithId);
-      setSuccess(`Meal saved! Logged ${detected.name}`);
+      setConfirmModalVisible(true); // show modal to confirm save
     } catch (err) {
       console.error(err);
-      setError("Failed to recognize or save meal. Try again.");
+      setError("Failed to recognize meal. Try again.");
     } finally {
       setLoading(false);
-      setSaving(false);
     }
+  };
+
+  const handleSaveMeal = async () => {
+    if (!meal) return;
+    setConfirmModalVisible(false);
+    setLoading(true);
+
+    try {
+      await saveMeal(meal);
+      setSuccess(`Meal saved! Logged ${meal.name}`);
+      setMeal(null);
+      setImageUri(null);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to save meal. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkipSave = () => {
+    setConfirmModalVisible(false);
+    setMeal(null);
+    setImageUri(null);
   };
 
   return (
@@ -64,22 +81,44 @@ export default function Scan() {
         <Text style={styles.title}>Scan Your Meal</Text>
 
         <TouchableOpacity
-          style={[styles.button, (loading || saving) && { opacity: 0.7 }]}
+          style={[styles.button, loading && { opacity: 0.7 }]}
           onPress={pickImage}
-          disabled={loading || saving}
+          disabled={loading}
         >
-          <Text style={styles.buttonText}>
-            {loading ? "Analyzing..." : saving ? "Saving..." : "Pick from Gallery"}
-          </Text>
+          <Text style={styles.buttonText}>{loading ? "Analyzing..." : "Pick from Gallery"}</Text>
         </TouchableOpacity>
 
-        {(loading || saving) && <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 18 }} />}
+        {loading && <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 18 }} />}
         {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
         {meal && <View style={styles.cardWrapper}><NutritionLabelCard meal={meal} /></View>}
 
-        <View style={{ height: 100 }} />
+        {/* Confirmation Modal */}
+        {confirmModalVisible && meal && (
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <Text style={{ fontWeight: "700", fontSize: 18, marginBottom: 12 }}>Save this meal?</Text>
+              <NutritionLabelCard meal={meal} />
+              <View style={{ flexDirection: "row", marginTop: 16 }}>
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: "#4CAF50", marginRight: 8 }]}
+                  onPress={handleSaveMeal}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "700" }}>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: "#F44336" }]}
+                  onPress={handleSkipSave}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "700" }}>Skip</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+
         <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
         <SuccessModal visible={!!success} message={success ?? ""} onClose={() => setSuccess(null)} />
+        <View style={{ height: 100 }} />
       </ScrollView>
     </LinearGradient>
   );
@@ -93,4 +132,7 @@ const styles = StyleSheet.create({
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   previewImage: { width: 240, height: 240, borderRadius: 16, marginVertical: 20 },
   cardWrapper: { width: "90%", alignItems: "center" },
+  modalBackground: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
+  modalContainer: { width: "85%", backgroundColor: "#fff", borderRadius: 12, padding: 16, alignItems: "center" },
+  modalButton: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: "center" },
 });

@@ -1,4 +1,4 @@
-// lib/MealService.ts
+
 import { MealWithId } from "@/app/(app)/Profile";
 import { supabase } from "@/lib/supabase";
 

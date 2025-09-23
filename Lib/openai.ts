@@ -38,26 +38,27 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
           {
             role: "user",
             content: [
+          {
+            type: "input_text",
+            text: `
+              You are a Filipino cuisine nutrition expert with detailed knowledge of Filipino dishes, ingredients, and protein sources.
+              Carefully analyze the image and identify ONLY Filipino dishes. Include the specific meat or protein in the dish.
+              Your response MUST be strictly valid JSON in this exact format:
               {
-                type: "input_text",
-                text: `
-                  You are a Filipino cuisine nutrition expert.
-                  Identify ONLY Filipino dishes in this image, including the specific meat or protein source.
-                  Return strictly valid JSON in this format:
-                  {
-                    "name": "string",
-                    "calories": number,
-                    "protein": number,
-                    "carbs": number,
-                    "fats": number,
-                    "fiber": number,
-                    "servings": number,
-                    "description": "string"
-                  }
-                  If the food is NOT Filipino, respond exactly with "NOT_FILIPINO".
-                  Do not include explanations, extra text, or code blocks — only valid JSON or NOT_FILIPINO.
-                `,
-              },
+                "name": "string",
+                "calories": number,
+                "protein": number,
+                "carbs": number,
+                "fats": number,
+                "fiber": number,
+                "servings": number,
+                "description": "string"
+              }
+              If the dish is NOT Filipino, respond exactly with "NOT_FILIPINO".
+              Never include explanations, commentary, or any text outside the JSON. Do not use code blocks or markdown formatting.
+              Prioritize accuracy: only output Filipino dishes and make the JSON fully compliant.
+            `
+          },
               { type: "input_image", image_url: imageDataUrl },
             ],
           },
