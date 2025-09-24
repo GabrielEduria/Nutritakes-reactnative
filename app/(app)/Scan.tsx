@@ -9,10 +9,10 @@ import NutritionLabelCard, { NutritionInfo } from "@/app/components/cards/Nutrit
 import ErrorModal from "@/app/components/modals/ErrorModal";
 import SuccessModal from "@/app/components/modals/SuccessModal";
 import { saveMeal } from "@/lib/MealService";
-import { recognizeMeal } from "@/lib/openai";
+import { NotFilipinoFoodError, recognizeMeal } from "@/lib/openai";
 import { MealWithId } from "./Profile";
 
-export default function Scan() {
+export default function Scan() {  
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [meal, setMeal] = useState<MealWithId | null>(null);
@@ -38,17 +38,21 @@ export default function Scan() {
     setSuccess(null);
     setMeal(null);
 
-    try {
-      const detected: NutritionInfo = await recognizeMeal(uri);
-      const detectedWithId: MealWithId = { id: uuidv4(), ...detected, image_url: uri };
-      setMeal(detectedWithId);
-      setConfirmModalVisible(true); // show modal to confirm save
-    } catch (err) {
-      console.error(err);
-      setError("Failed to recognize meal. Try again.");
-    } finally {
-      setLoading(false);
-    }
+      try {
+        const detected: NutritionInfo = await recognizeMeal(uri);
+        const detectedWithId: MealWithId = { id: uuidv4(), ...detected, image_url: uri };
+        setMeal(detectedWithId);
+        setConfirmModalVisible(true);
+      } catch (err) {
+        if (err instanceof NotFilipinoFoodError) {
+          setError(err.message); 
+        } else {
+          console.error(err);
+          setError("Failed to recognize meal. Try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
   };
 
   const handleSaveMeal = async () => {

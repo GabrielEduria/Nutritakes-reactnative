@@ -36,30 +36,30 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
           {
             role: "user",
             content: [
-          {
-            type: "input_text",
-            text: `
-              You are a Filipino cuisine nutrition expert with detailed knowledge of Filipino dishes, ingredients, and protein sources.
-              Carefully analyze the image and identify ONLY Filipino dishes. Include the specific meat or protein in the dish.
-              Your response MUST be strictly valid JSON in this exact format:
               {
-                "name": "string",
-                "calories": number,
-                "protein": number,
-                "carbs": number,
-                "fats": number,
-                "fiber": number,
-                "servings": number,
-                "description": "string"
-              }
-              If the dish is NOT Filipino, respond exactly with "NOT A FILIPINO DISH".
-            Guidelines:
-            - Include multiple items if present.
-            - Prioritize Filipino dishes over generic or non-local foods.
-            - Do not include explanations, extra text, or code blocks  only valid JSON or NOT_FILIPINO.
-            - Use realistic portion sizes and nutritional estimates based on standard Filipino meals.
-            `
-          },
+                type: "input_text",
+                text: `
+                  You are a Filipino cuisine nutrition expert with detailed knowledge of Filipino dishes, ingredients, and protein sources.
+                  Carefully analyze the image and identify ONLY Filipino dishes. Include the specific meat or protein in the dish.
+                  Your response MUST be strictly valid JSON in this exact format:
+                  {
+                    "name": "string",
+                    "calories": number,
+                    "protein": number,
+                    "carbs": number,
+                    "fats": number,
+                    "fiber": number,
+                    "servings": number,
+                    "description": "string"
+                  }
+                  If the dish is NOT Filipino, respond exactly with "NOT A FILIPINO DISH".
+                  Guidelines:
+                  - Include multiple items if present.
+                  - Prioritize Filipino dishes over generic or non-local foods.
+                  - Do not include explanations, extra text, or code blocks — only valid JSON or NOT A FILIPINO DISH.
+                  - Use realistic portion sizes and nutritional estimates based on standard Filipino meals.
+                `
+              },
               { type: "input_image", image_url: imageDataUrl },
             ],
           },
@@ -71,13 +71,11 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
     let textOutput: string = data.output?.[0]?.content?.[0]?.text || "{}";
     textOutput = textOutput.replace(/```json|```/gi, "").trim();
 
-    if (textOutput.toUpperCase() === "NOT_FILIPINO") {
+    if (textOutput.toUpperCase() === "NOT A FILIPINO DISH") {
       throw new NotFilipinoFoodError("This food is not Filipino.");
     }
 
-
     const mealData = JSON.parse(textOutput);
-
 
     const meal: MealWithId = {
       id: uuidv4(),
@@ -97,7 +95,6 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
   } catch (err) {
     console.error("OpenAI recognizeMeal error:", err);
     if (err instanceof NotFilipinoFoodError) throw err;
-
 
     return {
       id: uuidv4(),
