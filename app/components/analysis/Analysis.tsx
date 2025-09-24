@@ -8,7 +8,9 @@ const DEFAULT_WEEKLY_TARGET = 14000;
 
 export default function Analysis() {
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [weeklyCalories, setWeeklyCalories] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [weeklyTarget, setWeeklyTarget] = useState<number | null>(null);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");

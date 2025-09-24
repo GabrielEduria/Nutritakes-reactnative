@@ -15,13 +15,11 @@ export class NotFilipinoFoodError extends Error {
   }
 }
 
-// Convert local URI to Base64
 async function uriToBase64DataUrl(uri: string): Promise<string> {
   const base64 = await FileSystem.readAsStringAsync(uri, { encoding: "base64" });
   return `data:image/jpeg;base64,${base64}`;
 }
 
-// Recognize meal from image and return MealWithId
 export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
   const imageDataUrl = await uriToBase64DataUrl(imageUri);
 

@@ -1,4 +1,3 @@
-// components/dashboard/Dashboard.tsx
 import PieChart, { PieChartData } from "@/app/components/charts/PieChart";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
