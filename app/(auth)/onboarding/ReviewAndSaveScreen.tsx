@@ -25,22 +25,23 @@ export default function ReviewAndSaveScreen({ onBack }: Props) {
     load();
   }, []);
 
-  const finish = async () => {
-    try {
-      const userRes = await supabase.auth.getUser();
-      const userId = userRes?.data?.user?.id;
-      if (userId) {
-        await supabase
-          .from("user_profiles")
-          .update({ has_completed_onboarding: true })
-          .eq("user_id", userId);
-      }
+    const finish = async () => {
+      try {
 
-      router.replace("/(app)/Home");
-    } catch (err) {
-      console.error(err);
-    }
-  };
+        const userRes = await supabase.auth.getUser();
+        const userId = userRes?.data?.user?.id;
+        if (userId) {
+          await supabase
+            .from("user_profiles")
+            .update({ has_completed_onboarding: true })
+            .eq("user_id", userId);
+        }
+
+        router.replace("/(app)/Home");
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
 
   return (
