@@ -54,9 +54,12 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
                 "servings": number,
                 "description": "string"
               }
-              If the dish is NOT Filipino, respond exactly with "NOT_FILIPINO".
-              Never include explanations, commentary, or any text outside the JSON. Do not use code blocks or markdown formatting.
-              Prioritize accuracy: only output Filipino dishes and make the JSON fully compliant.
+              If the dish is NOT Filipino, respond exactly with "NOT A FILIPINO DISH".
+            Guidelines:
+            - Include multiple items if present.
+            - Prioritize Filipino dishes over generic or non-local foods.
+            - Do not include explanations, extra text, or code blocks  only valid JSON or NOT_FILIPINO.
+            - Use realistic portion sizes and nutritional estimates based on standard Filipino meals.
             `
           },
               { type: "input_image", image_url: imageDataUrl },

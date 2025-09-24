@@ -68,13 +68,13 @@ export default function Scan() {
       setLoading(false);
     }
   };
-
+  
   const handleSkipSave = () => {
     setConfirmModalVisible(false);
     setMeal(null);
     setImageUri(null);
   };
-
+  
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -92,7 +92,6 @@ export default function Scan() {
         {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
         {meal && <View style={styles.cardWrapper}><NutritionLabelCard meal={meal} /></View>}
 
-        {/* Confirmation Modal */}
         {confirmModalVisible && meal && (
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>

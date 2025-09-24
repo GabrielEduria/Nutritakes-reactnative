@@ -8,7 +8,6 @@ export default function AuthLayout() {
   const [session, setSession] = useState<any>(null);
   const router = useRouter();
 
-
   useEffect(() => {
     const loadSession = async () => {
       try {
@@ -23,7 +22,6 @@ export default function AuthLayout() {
     };
     loadSession();
 
-   
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
     });
@@ -32,36 +30,43 @@ export default function AuthLayout() {
   }, []);
 
 
-    useEffect(() => {
-      if (!loading) {
-        if (session?.user) {
-          const checkProfile = async () => {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("age, gender, weight, height, goal")
-              .eq("id", session.user.id)
-              .single();
+  useEffect(() => {
+    if (!loading && session?.user) {
+      const checkOnboarding = async () => {
+        try {
+          const { data: profile } = await supabase
+            .from("user_profiles")
+            .select("has_completed_onboarding")
+            .eq("user_id", session.user.id)
+            .single();
 
-            if (!profile || !profile.age || !profile.gender) {
-              router.replace("/(auth)/onboarding");
-            } else {
-              router.replace("/(app)/Home");
-            }
-          };
-          checkProfile();
-        } else {
-          router.replace("/(auth)/LoginScreen");
+          if (!profile?.has_completed_onboarding) {
+            router.replace("/(auth)/onboarding");
+          } else {
+            router.replace("/(app)/Home");
+          }
+        } catch (err) {
+          console.error("Error fetching profile:", err);
+          router.replace("/(auth)/onboarding"); 
         }
-      }
-    }, [loading, session, router]);
+      };
+      checkOnboarding();
+    }
+  }, [loading, session, router]);
 
 
   if (loading) return <SplashScreen />;
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="LoginScreen" />
-      <Stack.Screen name="RegisterScreen" />
-    </Stack>
-  );
+
+  if (!session?.user) {
+    return (
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="LoginScreen" />
+        <Stack.Screen name="RegisterScreen" />
+      </Stack>
+    );
+  }
+
+
+  return null;
 }

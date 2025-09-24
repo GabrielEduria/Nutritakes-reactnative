@@ -1,5 +1,6 @@
 // app/(auth)/onboarding/ReviewAndSaveScreen.tsx
 import { fetchProfile } from "@/lib/profileService";
+import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -26,11 +27,21 @@ export default function ReviewAndSaveScreen({ onBack }: Props) {
 
   const finish = async () => {
     try {
+      const userRes = await supabase.auth.getUser();
+      const userId = userRes?.data?.user?.id;
+      if (userId) {
+        await supabase
+          .from("user_profiles")
+          .update({ has_completed_onboarding: true })
+          .eq("user_id", userId);
+      }
+
       router.replace("/(app)/Home");
     } catch (err) {
       console.error(err);
     }
   };
+
 
   return (
     <View style={styles.container}>
