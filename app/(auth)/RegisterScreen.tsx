@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import BackgroundPattern from "../components/background/BackgroundPattern";
 
 import ConfirmationModal from "@/app/components/modals/ConfirmationModal";
 
@@ -54,6 +55,7 @@ const handleRegister = async () => {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <BackgroundPattern>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -114,7 +116,7 @@ const handleRegister = async () => {
         </LinearGradient>
       </KeyboardAvoidingView>
 
- 
+      </BackgroundPattern>
       <ConfirmationModal
         visible={showVerifyModal}
         message="We’ve sent you a link to verify your email. Please check your inbox before logging in."
