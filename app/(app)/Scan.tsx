@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from "uuid";
+import BackgroundPattern from "../components/background/BackgroundPattern";
 
 import NutritionLabelCard, { NutritionInfo } from "@/app/components/cards/NutritionLabelCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";
@@ -93,6 +94,8 @@ export default function Scan() {
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+
+        <BackgroundPattern>
         <Text style={styles.title}>Scan Your Meal</Text>
 
         <TouchableOpacity
@@ -141,6 +144,7 @@ export default function Scan() {
         <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
         <SuccessModal visible={!!success} message={success ?? ""} onClose={() => setSuccess(null)} />
         <View style={{ height: 100 }} />
+        </BackgroundPattern>
       </ScrollView>
     </LinearGradient>
   );
