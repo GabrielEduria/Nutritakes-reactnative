@@ -1,3 +1,4 @@
+// app/(app)/Dashboard.tsx
 import Analysis from "@/app/components/analysis/Analysis";
 import MacroSummaryCard from "@/app/components/cards/MacroSummaryCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";
@@ -81,12 +82,11 @@ export default function Dashboard() {
           <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 40 }} />
         ) : (
           <>
-      
+            {/* MacroSummaryCard now receives actual total calories */}
             <View style={styles.card}>
-              <MacroSummaryCard macros={macros} totalCalories={0} />
+              <MacroSummaryCard macros={macros} totalCalories={macros.calories} />
             </View>
 
-     
             <Analysis />
 
             <View style={styles.card}>

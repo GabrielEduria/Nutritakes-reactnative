@@ -32,27 +32,38 @@ export default function Scan() {
     }
   };
 
+  const openCamera = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) return setError("Camera permission is required!");
+
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
+    if (!result.canceled && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      setImageUri(uri);
+      processImage(uri);
+    }
+  };
+
   const processImage = async (uri: string) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
     setMeal(null);
 
-      try {
-        const detected: NutritionInfo = await recognizeMeal(uri);
-        const detectedWithId: MealWithId = { id: uuidv4(), ...detected, image_url: uri };
-        setMeal(detectedWithId);
-        setConfirmModalVisible(true);
-      } catch (err) {
-        if (err instanceof NotFilipinoFoodError) {
-          setError(err.message); 
-        } else {
-          console.error(err);
-          setError("Failed to recognize meal. Try again.");
-        }
-      } finally {
-        setLoading(false);
+    try {
+      const detected: NutritionInfo = await recognizeMeal(uri);
+      const detectedWithId: MealWithId = { id: uuidv4(), ...detected, image_url: uri };
+      setMeal(detectedWithId);
+      setConfirmModalVisible(true);
+    } catch (err) {
+      if (err instanceof NotFilipinoFoodError) setError(err.message);
+      else {
+        console.error(err);
+        setError("Failed to recognize meal. Try again.");
       }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveMeal = async () => {
@@ -72,17 +83,25 @@ export default function Scan() {
       setLoading(false);
     }
   };
-  
+
   const handleSkipSave = () => {
     setConfirmModalVisible(false);
     setMeal(null);
     setImageUri(null);
   };
-  
+
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Scan Your Meal</Text>
+
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          onPress={openCamera}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>{loading ? "Analyzing..." : "Open Camera"}</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, loading && { opacity: 0.7 }]}
@@ -130,8 +149,8 @@ export default function Scan() {
 const styles = StyleSheet.create({
   background: { flex: 1 },
   container: { paddingBottom: 40, paddingTop: 30, alignItems: "center", width: "100%" },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 16, color: "#333" },
-  button: { backgroundColor: "#FF5C00", paddingVertical: 14, paddingHorizontal: 28, borderRadius: 12, alignItems: "center", marginBottom: 20, elevation: 3 },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 16, color: "#212121" },
+  button: { backgroundColor: "#FF5C00", paddingVertical: 14, paddingHorizontal: 28, borderRadius: 12, alignItems: "center", marginBottom: 16, elevation: 3 },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   previewImage: { width: 240, height: 240, borderRadius: 16, marginVertical: 20 },
   cardWrapper: { width: "90%", alignItems: "center" },

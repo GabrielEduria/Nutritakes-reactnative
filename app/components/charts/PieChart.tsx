@@ -11,11 +11,13 @@ export type PieChartData = {
 type Props = {
   data: PieChartData[];
   title?: string;
-  height?: number;
+  height?: number; 
+  width?: number;  
+  style?: object;
 };
 
-const PieChart: React.FC<Props> = ({ data, title, height = 200 }) => {
-  const screenWidth = Dimensions.get("window").width * 0.8;
+const PieChart: React.FC<Props> = ({ data, title, height = 200, width }) => {
+  const screenWidth = width ?? Dimensions.get("window").width * 0.8;
 
   const chartData = data.map((d) => ({
     name: d.name,
@@ -41,7 +43,6 @@ const PieChart: React.FC<Props> = ({ data, title, height = 200 }) => {
         accessor="population"
         backgroundColor="transparent"
         paddingLeft="15"
-        hasLegend={false} 
         absolute
       />
     </View>
