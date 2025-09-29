@@ -26,97 +26,100 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
 
+  const handleRegister = async () => {
+    if (!email || !password) {
+      setError("Please fill out all fields.");
+      return;
+    }
 
-const handleRegister = async () => {
-  if (!email || !password) {
-    setError("Please fill out all fields.");
-    return;
-  }
+    setLoading(true);
+    setError("");
 
-  setLoading(true);
-  setError("");
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: "nutritakes://auth/confirm",
+      },
+    });
 
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: 'nutritakes://auth/confirm',
-    },
-  });
+    if (error) {
+      setError(error.message);
+    } else {
+      setShowVerifyModal(true);
+    }
 
-  if (error) {
-    setError(error.message);
-  } else {
-    setShowVerifyModal(true);
-  }
-
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <BackgroundPattern>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
-        <LinearGradient
-          colors={["#FFFDD0", "#FFD580", "#FFB347"]}
-          style={styles.background}
+    <LinearGradient
+      colors={[
+        "rgba(255,253,208,0.9)",
+        "rgba(255,213,128,0.9)",
+        "rgba(255,179,71,0.9)",
+      ]}
+      style={styles.gradient}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
         >
-          <View style={styles.container}>
-            <Image
-              source={require("@/assets/images/icon/NT.png")}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Sign up to get started</Text>
+          <BackgroundPattern>
+            <View style={styles.container}>
+              <Image
+                source={require("@/assets/images/icon/NT.png")}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+              <Text style={styles.title}>Create Account</Text>
+              <Text style={styles.subtitle}>Sign up to get started</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              placeholderTextColor="#777"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                placeholderTextColor="#777"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
 
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              placeholderTextColor="#777"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your password"
+                placeholderTextColor="#777"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+              {error ? <Text style={styles.error}>{error}</Text> : null}
 
-            <TouchableOpacity
-              style={[styles.button, loading && { opacity: 0.6 }]}
-              onPress={handleRegister}
-              disabled={loading}
-            >
-              <Text style={styles.buttonText}>
-                {loading ? "Creating Account..." : "Register"}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.linkContainer}>
-              <Text style={styles.linkText}>
-                Already have an account?{" "}
-                <Text style={styles.linkBold}>
-                  <Link href="/(auth)/LoginScreen">Login</Link>
+              <TouchableOpacity
+                style={[styles.button, loading && { opacity: 0.6 }]}
+                onPress={handleRegister}
+                disabled={loading}
+              >
+                <Text style={styles.buttonText}>
+                  {loading ? "Creating Account..." : "Sign up"}
                 </Text>
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </LinearGradient>
-      </KeyboardAvoidingView>
+              </TouchableOpacity>
 
-      </BackgroundPattern>
+              <TouchableOpacity style={styles.linkContainer}>
+                <Text style={styles.linkText}>
+                  Already have an account?{" "}
+                  <Text style={styles.linkBold}>
+                    <Link href="/(auth)/LoginScreen">Login</Link>
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </BackgroundPattern>
+        </KeyboardAvoidingView>
+      </ScrollView>
+
       <ConfirmationModal
         visible={showVerifyModal}
         message="We’ve sent you a link to verify your email. Please check your inbox before logging in."
@@ -125,12 +128,14 @@ const handleRegister = async () => {
           router.replace("/(auth)/LoginScreen");
         }}
       />
-    </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1 },
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     justifyContent: "center",

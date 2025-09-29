@@ -3,10 +3,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import BackgroundPattern from "../components/background/BackgroundPattern";
 import HistoryCard from "../components/cards/HistoryCard";
 import ErrorModal from "../components/modals/ErrorModal";
 import SuccessModal from "../components/modals/SuccessModal";
-
 export type MealWithId = {
   id: string;
   name: string;
@@ -138,7 +138,9 @@ export default function ProfileScreen() {
   if (!user) return null;
 
   return (
+
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
+      <BackgroundPattern>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.infoCard}>
           <Text style={styles.email}>{user.email ?? "Email Placeholder"}</Text>
@@ -172,6 +174,7 @@ export default function ProfileScreen() {
         <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
         <SuccessModal visible={!!success} message={success ?? ""} onClose={() => setSuccess(null)} />
       </ScrollView>
+          </BackgroundPattern>
     </LinearGradient>
   );
 }

@@ -1,4 +1,3 @@
-// components/BackgroundPattern.tsx
 import React from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
 
@@ -15,7 +14,7 @@ const ICON_SPACING = 280;
 const ICON_OPACITY = 0.03;
 
 export default function BackgroundPattern({ children }: { children: React.ReactNode }) {
-  // calculate how many rows and columns are needed to cover the screen
+
   const rows = Math.ceil(height / ICON_SPACING) + 1;
   const cols = Math.ceil(width / ICON_SPACING) + 1;
 
@@ -23,7 +22,7 @@ export default function BackgroundPattern({ children }: { children: React.ReactN
   let id = 0;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const icon = icons[(r + c) % icons.length]; // cycle through icons
+      const icon = icons[(r + c) % icons.length]; 
       grid.push({
         id: id++,
         top: r * ICON_SPACING,

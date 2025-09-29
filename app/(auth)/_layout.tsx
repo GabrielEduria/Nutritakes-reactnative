@@ -1,7 +1,7 @@
 import SplashScreen from "@/app/SplashScreen";
 import { supabase } from "@/lib/supabase";
 import { Stack } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface UserProfile {
@@ -14,45 +14,46 @@ export default function AuthLayout() {
   const [session, setSession] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [splashMessage, setSplashMessage] = useState("Loading...");
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadSession = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (isMounted) setSession(data.session ?? null);
-      } catch (err: any) {
-        console.error("Failed to get session:", err);
-        if (isMounted) setError("Failed to fetch session");
-      } finally {
-        if (isMounted) setLoadingSession(false);
-      }
-    };
-
-    loadSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      if (isMounted) setSession(newSession);
-      if (isMounted) setProfile(null); 
-    });
-
-    return () => {
-      isMounted = false;
-      listener.subscription.unsubscribe();
-    };
+  const fetchSession = useCallback(async () => {
+    setLoadingSession(true);
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      setSession(data.session ?? null);
+    } catch (err: any) {
+      console.error("Failed to get session:", err);
+      setError("Failed to fetch session");
+    } finally {
+      setLoadingSession(false);
+    }
   }, []);
 
 
-  useEffect(() => {
-    let isMounted = true;
-    if (!session?.user) {
-      setProfile(null);
-      return;
-    }
+  const pollProfile = useCallback(async (userId: string, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("has_completed_onboarding")
+        .eq("user_id", userId)
+        .single<UserProfile>();
 
-    const loadProfile = async () => {
+      if (data?.has_completed_onboarding) return data;
+      await new Promise((res) => setTimeout(res, 1000));
+    }
+    return null;
+  }, []);
+
+
+  const fetchProfile = useCallback(
+    async (forcePoll = false) => {
+      if (!session?.user) {
+        setProfile(null);
+        return;
+      }
+
       setLoadingProfile(true);
       try {
         const { data, error } = await supabase
@@ -62,25 +63,51 @@ export default function AuthLayout() {
           .single<UserProfile>();
 
         if (error) throw error;
-        if (isMounted) setProfile(data ?? null);
+
+        if (data?.has_completed_onboarding) {
+          setProfile(data);
+        } else if (forcePoll) {
+          const polled = await pollProfile(session.user.id);
+          setProfile(polled ?? data);
+        } else {
+          setProfile(data ?? null);
+        }
       } catch (err: any) {
         console.error("Failed to fetch profile:", err);
-        if (isMounted) setError("Failed to fetch profile");
+        setError("Failed to fetch profile");
       } finally {
-        if (isMounted) setLoadingProfile(false);
+        setLoadingProfile(false);
       }
-    };
+    },
+    [session, pollProfile]
+  );
 
-    loadProfile();
+ 
+  useEffect(() => {
+    fetchSession();
 
-    return () => {
-      isMounted = false;
-    };
-  }, [session]);
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession);
+        setProfile(null); 
+      }
+    );
 
-  if (loadingSession || loadingProfile) {
-    return <SplashScreen />;
-  }
+    return () => listener.subscription.unsubscribe();
+  }, [fetchSession]);
+
+
+  useEffect(() => {
+    if (session?.user) {
+      setSplashMessage("Fetching profile...");
+      fetchProfile();
+    }
+  }, [session, fetchProfile]);
+
+  
+  if (loadingSession) return <SplashScreen />;
+  if (loadingProfile) return <SplashScreen />;
+
 
   if (error) {
     return (
@@ -90,8 +117,8 @@ export default function AuthLayout() {
           style={styles.retryButton}
           onPress={() => {
             setError(null);
-            setLoadingSession(true);
-            setLoadingProfile(true);
+            fetchSession();
+            if (session?.user) fetchProfile(true);
           }}
         >
           <Text style={styles.retryText}>Retry</Text>
@@ -99,6 +126,7 @@ export default function AuthLayout() {
       </View>
     );
   }
+
 
   if (!session?.user) {
     return (
@@ -108,6 +136,7 @@ export default function AuthLayout() {
       </Stack>
     );
   }
+
 
   if (!profile?.has_completed_onboarding) {
     return (
@@ -123,6 +152,7 @@ export default function AuthLayout() {
     );
   }
 
+ 
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(app)/Dashboard" />
