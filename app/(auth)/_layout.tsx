@@ -1,50 +1,59 @@
 import SplashScreen from "@/app/SplashScreen";
 import { supabase } from "@/lib/supabase";
 import { Stack } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface UserProfile {
   has_completed_onboarding: boolean;
 }
 
 export default function AuthLayout() {
-  const [loading, setLoading] = useState(true);
+  const [loadingSession, setLoadingSession] = useState(true);
+  const [loadingProfile, setLoadingProfile] = useState(false);
   const [session, setSession] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadSession = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
-        setSession(data.session ?? null);
-      } catch (err) {
+        if (isMounted) setSession(data.session ?? null);
+      } catch (err: any) {
         console.error("Failed to get session:", err);
-        setSession(null);
+        if (isMounted) setError("Failed to fetch session");
       } finally {
-        setLoading(false);
+        if (isMounted) setLoadingSession(false);
       }
     };
 
     loadSession();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        setSession(newSession);
-      }
-    );
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (isMounted) setSession(newSession);
+      if (isMounted) setProfile(null); 
+    });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (!session?.user) {
-        setProfile(null);
-        return;
-      }
 
+  useEffect(() => {
+    let isMounted = true;
+    if (!session?.user) {
+      setProfile(null);
+      return;
+    }
+
+    const loadProfile = async () => {
+      setLoadingProfile(true);
       try {
         const { data, error } = await supabase
           .from("user_profiles")
@@ -53,18 +62,43 @@ export default function AuthLayout() {
           .single<UserProfile>();
 
         if (error) throw error;
-        setProfile(data);
-        console.log("Fetched profile:", data);
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-        setProfile(null);
+        if (isMounted) setProfile(data ?? null);
+      } catch (err: any) {
+        console.error("Failed to fetch profile:", err);
+        if (isMounted) setError("Failed to fetch profile");
+      } finally {
+        if (isMounted) setLoadingProfile(false);
       }
     };
 
     loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
   }, [session]);
 
-  if (loading) return <SplashScreen />;
+  if (loadingSession || loadingProfile) {
+    return <SplashScreen />;
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => {
+            setError(null);
+            setLoadingSession(true);
+            setLoadingProfile(true);
+          }}
+        >
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (!session?.user) {
     return (
@@ -75,7 +109,7 @@ export default function AuthLayout() {
     );
   }
 
-  if (!profile || !profile.has_completed_onboarding) {
+  if (!profile?.has_completed_onboarding) {
     return (
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="onboarding/AgeScreen" />
@@ -95,3 +129,31 @@ export default function AuthLayout() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    backgroundColor: "#FFFDD0",
+  },
+  errorText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FF5C00",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: "#FF5C00",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+});

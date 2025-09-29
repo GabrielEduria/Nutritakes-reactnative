@@ -1,6 +1,6 @@
 import React from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
-import PieChart, { PieChartData } from "../charts/PieChart";
+import RadarChart from "../charts/RadarChart";
 
 type Macros = {
   protein: number;
@@ -14,40 +14,37 @@ type Props = {
 };
 
 const MacroSummaryCard: React.FC<Props> = ({ macros, totalCalories }) => {
-  const pieData: PieChartData[] = [
-    { name: "Protein", value: macros.protein, color: "#FF6384" },
-    { name: "Carbs", value: macros.carbs, color: "#36A2EB" },
-    { name: "Fats", value: macros.fats, color: "#FFCE56" },
-  ];
 
-  const screenWidth = Dimensions.get("window").width;
 
   return (
     <View style={styles.card}>
-      <View style={styles.inlineContainer}>
-  
-        <PieChart data={pieData} height={140} style={{ width: screenWidth * 0.35 }} />
+      <Text style={styles.header}>Calorie Budget</Text>
+      <Text style={styles.subHeader}>{totalCalories} kcal</Text>
 
-
-        <View style={styles.infoContainer}>
-          <Text style={styles.header}>Calorie Budget</Text>
-          <Text style={styles.subHeader}>{totalCalories} kcal</Text>
-
-          <View style={styles.macroRow}>
-            <View style={styles.macroItem}>
-              <Text style={[styles.macroLabel, { color: "#FF6384" }]}>Protein</Text>
-              <Text style={styles.macroValue}>{macros.protein}g</Text>
-            </View>
-            <View style={styles.macroItem}>
-              <Text style={[styles.macroLabel, { color: "#36A2EB" }]}>Carbs</Text>
-              <Text style={styles.macroValue}>{macros.carbs}g</Text>
-            </View>
-            <View style={styles.macroItem}>
-              <Text style={[styles.macroLabel, { color: "#FFCE56" }]}>Fats</Text>
-              <Text style={styles.macroValue}>{macros.fats}g</Text>
-            </View>
-          </View>
+      <View style={styles.macroRow}>
+        <View style={styles.macroItem}>
+          <Text style={[styles.macroLabel, { color: "#FF6384" }]}>Protein</Text>
+          <Text style={styles.macroValue}>{macros.protein}g</Text>
         </View>
+        <View style={styles.macroItem}>
+          <Text style={[styles.macroLabel, { color: "#36A2EB" }]}>Carbs</Text>
+          <Text style={styles.macroValue}>{macros.carbs}g</Text>
+        </View>
+        <View style={styles.macroItem}>
+          <Text style={[styles.macroLabel, { color: "#FFCE56" }]}>Fats</Text>
+          <Text style={styles.macroValue}>{macros.fats}g</Text>
+        </View>
+      </View>
+
+      <View style={styles.chartContainer}>
+        <RadarChart
+          data={{
+            labels: ["Protein", "Carbs", "Fats"],
+            values: [macros.protein, macros.carbs, macros.fats],
+            color: "rgba(255,92,0,0.4)",
+          }}
+          size={Dimensions.get("window").width * 0.8}
+        />
       </View>
     </View>
   );
@@ -64,41 +61,23 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
     elevation: 2,
-  },
-  inlineContainer: {
-    flexDirection: "row",
     alignItems: "center",
   },
-  infoContainer: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  header: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  subHeader: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 12,
-  },
+  header: { fontSize: 16, fontWeight: "700", marginBottom: 4 },
+  subHeader: { fontSize: 14, color: "#666", marginBottom: 12 },
   macroRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
+    width: "100%",
+    marginBottom: 16,
   },
-  macroItem: {
+  macroItem: { alignItems: "center" },
+  macroLabel: { fontSize: 14, fontWeight: "600" },
+  macroValue: { fontSize: 14, fontWeight: "700" },
+  chartContainer: {
     alignItems: "center",
-    marginHorizontal: 4,
-  },
-  macroLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  macroValue: {
-    fontSize: 14,
-    fontWeight: "700",
+    justifyContent: "center",
+    marginTop: 8,
   },
 });
 

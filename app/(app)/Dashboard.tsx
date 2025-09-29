@@ -1,4 +1,3 @@
-// app/(app)/Dashboard.tsx
 import Analysis from "@/app/components/analysis/Analysis";
 import MacroSummaryCard from "@/app/components/cards/MacroSummaryCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";
@@ -75,25 +74,23 @@ export default function Dashboard() {
 
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.header}>Welcome to NutriTakes!</Text>
 
         {loading ? (
           <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 40 }} />
         ) : (
           <>
-            {/* MacroSummaryCard now receives actual total calories */}
-            <View style={styles.card}>
-              <MacroSummaryCard macros={macros} totalCalories={macros.calories} />
-            </View>
+            <MacroSummaryCard macros={macros} totalCalories={macros.calories} />
 
-            <Analysis />
+            <View style={{ width: "100%", marginVertical: 16 }}>
+              <Analysis />
+            </View>
 
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Eating Activity</Text>
               <Text style={styles.cardText}>
-                Today: {macros.calories} kcal • {macros.protein}g protein • {macros.carbs}g carbs •{" "}
-                {macros.fats}g fats
+                Today: {macros.calories} kcal • {macros.protein}g protein • {macros.carbs}g carbs • {macros.fats}g fats
               </Text>
             </View>
 
@@ -112,7 +109,7 @@ export default function Dashboard() {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  container: { flexGrow: 1, padding: 16, alignItems: "center" },
+  scrollContainer: { flexGrow: 1, padding: 16, alignItems: "stretch" },
   header: { fontSize: 24, fontWeight: "700", color: "#0d0d0d", marginBottom: 16, textAlign: "center" },
 
   card: {

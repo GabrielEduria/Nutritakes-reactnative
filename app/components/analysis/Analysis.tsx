@@ -110,12 +110,12 @@ export default function Analysis() {
     score === 0
       ? "📸 Snap your first meal to start tracking."
       : score < 40
-      ? "🚀 You're warming up — keep logging!"
+      ? "🚀 You're warming up! keep logging!"
       : score < 70
-      ? "🔥 Good job — keep consistency!"
+      ? "🔥 Good job! keep consistency!"
       : score < 100
-      ? "🌟 Almost there — you can do it!"
-      : "🏆 Goal crushed — great work!";
+      ? "🌟 Almost there. you can do it!"
+      : "🏆 Goal crushed! great work!";
 
   return (
     <View style={styles.card}>
