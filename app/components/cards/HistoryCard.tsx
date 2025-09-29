@@ -12,9 +12,7 @@ const HistoryCard: React.FC<HistoryCardProps> = ({ meal, onDelete }) => {
 
   return (
     <View style={styles.container}>
-
       <View style={styles.card}>
-     
         {meal.image_url && (
           <Image source={{ uri: meal.image_url }} style={styles.thumbnail} />
         )}
@@ -79,12 +77,11 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     backgroundColor: "#fff",
-    borderRadius: 12,
     padding: 12,
     elevation: 2,
     alignItems: "center",
   },
-  thumbnail: { width: 60, height: 60, borderRadius: 12, marginRight: 10 },
+  thumbnail: { width: 60, height: 60, marginRight: 10 }, 
   info: { flex: 2 },
   metrics: { flex: 1, alignItems: "flex-end" },
   name: { fontSize: 16, fontWeight: "bold" },
@@ -99,13 +96,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginTop: 4,
   },
-  viewBtn: { backgroundColor: "#4CAF50", padding: 6, borderRadius: 6, marginRight: 8 },
-  deleteBtn: { backgroundColor: "#F44336", padding: 6, borderRadius: 6 },
+  viewBtn: { backgroundColor: "#FF5C00", padding: 6, marginRight: 8 },
+  deleteBtn: { backgroundColor: "#FF0000", padding: 6 },
   buttonText: { color: "#fff", fontWeight: "bold" },
-  modalBackground: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
-  modalContainer: { width: "90%", backgroundColor: "#fff", borderRadius: 12, padding: 16, alignItems: "center" },
-  closeBtn: { marginTop: 12, backgroundColor: "#555", padding: 8, borderRadius: 6, alignSelf: "center" },
-  modalImage: { width: "100%", height: 200, borderRadius: 12, marginBottom: 12 },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: { width: "90%", backgroundColor: "#fff", padding: 16, alignItems: "center" }, // no border radius
+  closeBtn: { marginTop: 12, backgroundColor: "#FF5C00", padding: 8, alignSelf: "center" },
+  modalImage: { width: "100%", height: 200, marginBottom: 12 }, 
 });
 
 export default HistoryCard;

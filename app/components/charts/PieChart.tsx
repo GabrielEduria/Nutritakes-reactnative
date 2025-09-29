@@ -1,4 +1,3 @@
-// components/charts/PieChart.tsx
 import React from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { PieChart as RNPieChart } from "react-native-chart-kit";
@@ -12,9 +11,10 @@ export type PieChartData = {
 type Props = {
   data: PieChartData[];
   title?: string;
+  height?: number;
 };
 
-const PieChart: React.FC<Props> = ({ data, title }) => {
+const PieChart: React.FC<Props> = ({ data, title, height = 200 }) => {
   const screenWidth = Dimensions.get("window").width * 0.8;
 
   const chartData = data.map((d) => ({
@@ -31,7 +31,7 @@ const PieChart: React.FC<Props> = ({ data, title }) => {
       <RNPieChart
         data={chartData}
         width={screenWidth}
-        height={200}
+        height={height}
         chartConfig={{
           backgroundGradientFrom: "#fff",
           backgroundGradientTo: "#fff",
@@ -41,6 +41,7 @@ const PieChart: React.FC<Props> = ({ data, title }) => {
         accessor="population"
         backgroundColor="transparent"
         paddingLeft="15"
+        hasLegend={false} 
         absolute
       />
     </View>

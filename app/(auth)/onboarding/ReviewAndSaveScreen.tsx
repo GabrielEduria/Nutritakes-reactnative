@@ -1,17 +1,17 @@
-// app/(auth)/onboarding/ReviewAndSaveScreen.tsx
 import { fetchProfile } from "@/lib/profileService";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type Props = { 
-  onDone: () => void; 
+  onDone?: () => void; 
   onBack?: () => void;   
 };
 
-export default function ReviewAndSaveScreen({ onBack }: Props) {
+export default function ReviewAndSaveScreen({ onBack, onDone }: Props) {
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const router = useRouter();
 
@@ -25,24 +25,43 @@ export default function ReviewAndSaveScreen({ onBack }: Props) {
     load();
   }, []);
 
-    const finish = async () => {
-      try {
+  const finish = async () => {
+    try {
+      setSaving(true);
 
-        const userRes = await supabase.auth.getUser();
-        const userId = userRes?.data?.user?.id;
-        if (userId) {
-          await supabase
-            .from("user_profiles")
-            .update({ has_completed_onboarding: true })
-            .eq("user_id", userId);
-        }
-
-        router.replace("/(app)/Home");
-      } catch (err) {
-        console.error(err);
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error("Authentication failed. Please log in again.");
       }
-    };
 
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({ has_completed_onboarding: true })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      const { data: updatedProfile, error: fetchError } = await supabase
+        .from("user_profiles")
+        .select("has_completed_onboarding")
+        .eq("user_id", user.id)
+        .single();
+
+      if (fetchError || !updatedProfile?.has_completed_onboarding) {
+        throw new Error("Failed to verify onboarding completion.");
+      }
+
+      if (onDone) {
+        onDone();
+      } else {
+        router.replace("/(app)/Dashboard");
+      }
+    } catch (err: any) {
+      console.error("Finish onboarding error:", err);
+      Alert.alert("Error", err.message || "Something went wrong. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -78,12 +97,22 @@ export default function ReviewAndSaveScreen({ onBack }: Props) {
           </View>
 
           <View style={{ flexDirection: "row", marginTop: 18 }}>
-            <TouchableOpacity style={[styles.btn, { backgroundColor: "#eee" }]} onPress={() => onBack?.()}>
+            <TouchableOpacity
+              style={[styles.btn, { backgroundColor: "#eee" }]}
+              onPress={() => onBack?.()}
+              disabled={saving}
+            >
               <Text style={{ fontWeight: "700" }}>Back</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.btn, { backgroundColor: "#FF5C00", marginLeft: 12 }]} onPress={finish}>
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Start Using App</Text>
+            <TouchableOpacity
+              style={[styles.btn, { backgroundColor: "#FF5C00", marginLeft: 12 }]}
+              onPress={finish}
+              disabled={saving}
+            >
+              <Text style={{ color: "#fff", fontWeight: "700" }}>
+                {saving ? "Saving..." : "Start Using App"}
+              </Text>
             </TouchableOpacity>
           </View>
         </>

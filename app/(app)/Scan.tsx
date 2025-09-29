@@ -103,13 +103,13 @@ export default function Scan() {
               <NutritionLabelCard meal={meal} />
               <View style={{ flexDirection: "row", marginTop: 16 }}>
                 <TouchableOpacity
-                  style={[styles.modalButton, { backgroundColor: "#4CAF50", marginRight: 8 }]}
+                  style={[styles.modalButton, { backgroundColor: "#FF5C00", marginRight: 8 }]}
                   onPress={handleSaveMeal}
                 >
                   <Text style={{ color: "#fff", fontWeight: "700" }}>Save</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.modalButton, { backgroundColor: "#F44336" }]}
+                  style={[styles.modalButton, { backgroundColor: "#FF0000" }]}
                   onPress={handleSkipSave}
                 >
                   <Text style={{ color: "#fff", fontWeight: "700" }}>Skip</Text>
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   background: { flex: 1 },
   container: { paddingBottom: 40, paddingTop: 30, alignItems: "center", width: "100%" },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 16, color: "#333" },
-  button: { backgroundColor: "#FF914D", paddingVertical: 14, paddingHorizontal: 28, borderRadius: 12, alignItems: "center", marginBottom: 20, elevation: 3 },
+  button: { backgroundColor: "#FF5C00", paddingVertical: 14, paddingHorizontal: 28, borderRadius: 12, alignItems: "center", marginBottom: 20, elevation: 3 },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   previewImage: { width: 240, height: 240, borderRadius: 16, marginVertical: 20 },
   cardWrapper: { width: "90%", alignItems: "center" },

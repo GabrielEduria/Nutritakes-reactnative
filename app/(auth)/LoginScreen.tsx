@@ -44,7 +44,7 @@ export default function LoginScreen() {
       setError(loginError.message);
     } else if (data.user) {
       setSuccess("Login successful!");
-      router.replace("/(app)/Home");
+      router.replace("/(app)/Dashboard");
     }
   };
 

@@ -114,7 +114,7 @@ export default function ProfileScreen() {
     }
   };
 
-  // Logout
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -196,13 +196,13 @@ const styles = StyleSheet.create({
   verified: { color: "#000", fontSize: 14 },
   actions: { marginTop: 10, width: "90%" },
   button: {
-    backgroundColor: "#FF914D",
+    backgroundColor: "#FF5C00",
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
     marginBottom: 12,
   },
-  logout: { backgroundColor: "#E63946" },
+  logout: { backgroundColor: "#FF0000" },
   buttonText: { color: "#fff", fontWeight: "bold" },
   mealsSection: { width: "90%", marginTop: 20 },
   sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10, color: "#000" },

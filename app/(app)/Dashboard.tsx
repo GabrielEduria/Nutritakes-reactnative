@@ -1,6 +1,5 @@
 import Analysis from "@/app/components/analysis/Analysis";
-import WeeklyGoalCard from "@/app/components/cards/WeeklyGoalCard";
-import Dashboard from "@/app/components/dashboard/Dashboard";
+import MacroSummaryCard from "@/app/components/cards/MacroSummaryCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";
 import { supabase } from "@/lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
@@ -9,7 +8,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-nat
 
 type Macros = { protein: number; carbs: number; fats: number; calories: number };
 
-export default function Home() {
+export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [macros, setMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, calories: 0 });
@@ -59,7 +58,7 @@ export default function Home() {
             .subscribe();
         }
       } catch (err: any) {
-        console.error("Home fetchTodayMacros error:", err);
+        console.error("Dashboard fetchTodayMacros error:", err);
         setError(err.message || "Failed to load dashboard data.");
       } finally {
         setLoading(false);
@@ -82,13 +81,13 @@ export default function Home() {
           <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 40 }} />
         ) : (
           <>
-            <WeeklyGoalCard />
-
-            <Analysis />
-
+      
             <View style={styles.card}>
-              <Dashboard macros={macros} />
+              <MacroSummaryCard macros={macros} totalCalories={0} />
             </View>
+
+     
+            <Analysis />
 
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Eating Activity</Text>

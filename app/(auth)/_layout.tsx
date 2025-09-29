@@ -1,6 +1,6 @@
 import SplashScreen from "@/app/SplashScreen";
 import { supabase } from "@/lib/supabase";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 
 interface UserProfile {
@@ -10,16 +10,15 @@ interface UserProfile {
 export default function AuthLayout() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
-  const router = useRouter();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
 
   useEffect(() => {
     const loadSession = async () => {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        setSession(session ?? null);
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        setSession(data.session ?? null);
       } catch (err) {
         console.error("Failed to get session:", err);
         setSession(null);
@@ -40,73 +39,32 @@ export default function AuthLayout() {
   }, []);
 
   useEffect(() => {
-    if (loading) return;
-
-    const checkOnboarding = async () => {
+    const loadProfile = async () => {
       if (!session?.user) {
-        console.log("No session, showing login");
-        router.replace("/(auth)/LoginScreen");
+        setProfile(null);
         return;
       }
 
-      console.log("Session loaded:", session.user.id);
-
       try {
-     
-        let { data: profile, error } = await supabase
+        const { data, error } = await supabase
           .from("user_profiles")
           .select("has_completed_onboarding")
           .eq("user_id", session.user.id)
-          .maybeSingle<UserProfile>();
+          .single<UserProfile>();
 
-        if (error) {
-          console.error("Error fetching profile:", error);
-        }
-
-        if (!profile) {
-          const { data: newProfile, error: insertError } = await supabase
-            .from("user_profiles")
-            .insert({
-              user_id: session.user.id,
-              has_completed_onboarding: false,
-            })
-            .select()
-            .maybeSingle<UserProfile>();
-
-          if (insertError) {
-            console.error("Error creating profile:", insertError);
-            router.replace("/(auth)/onboarding");
-            return;
-          }
-
-          profile = newProfile;
-        }
-
-        if (!profile) {
-          console.error("Profile is still null after fetch/insert.");
-          router.replace("/(auth)/onboarding");
-          return;
-        }
-
-        console.log("Profile fetched:", profile);
-
-        if (!profile.has_completed_onboarding) {
-          router.replace("/(auth)/onboarding");
-        } else {
-          router.replace("/(app)/Home");
-        }
+        if (error) throw error;
+        setProfile(data);
+        console.log("Fetched profile:", data);
       } catch (err) {
-        console.error("Check onboarding failed:", err);
-        router.replace("/(auth)/onboarding");
+        console.error("Error fetching profile:", err);
+        setProfile(null);
       }
     };
 
-    checkOnboarding();
-  }, [loading, session, router]);
-
+    loadProfile();
+  }, [session]);
 
   if (loading) return <SplashScreen />;
-
 
   if (!session?.user) {
     return (
@@ -117,5 +75,23 @@ export default function AuthLayout() {
     );
   }
 
-  return null;
+  if (!profile || !profile.has_completed_onboarding) {
+    return (
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="onboarding/AgeScreen" />
+        <Stack.Screen name="onboarding/GenderScreen" />
+        <Stack.Screen name="onboarding/WeightScreen" />
+        <Stack.Screen name="onboarding/HeightScreen" />
+        <Stack.Screen name="onboarding/GoalScreen" />
+        <Stack.Screen name="onboarding/CaloriesTargetScreen" />
+        <Stack.Screen name="onboarding/ReviewAndSaveScreen" />
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(app)/Dashboard" />
+    </Stack>
+  );
 }

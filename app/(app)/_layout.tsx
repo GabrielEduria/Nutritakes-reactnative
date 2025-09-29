@@ -13,23 +13,16 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
         const isFocused = state.index === index;
 
         const onPress = () => {
-          if (!isFocused) {
-            navigation.navigate(route.name);
-          }
+          if (!isFocused) navigation.navigate(route.name);
         };
-
-        const icon = (() => {
-          switch (route.name) {
-            case "Home":
-              return "home-outline";
-            case "Profile":
-              return "person-outline";
-            case "Scan":
-              return "camera-outline";
-            default:
-              return "ellipse-outline";
-          }
-        })();
+        const iconName: React.ComponentProps<typeof Ionicons>["name"] =
+          route.name === "Dashboard"
+            ? "bar-chart-outline" 
+            : route.name === "Profile"
+            ? "person-outline"
+            : route.name === "Scan"
+            ? "camera-outline"
+            : "ellipse-outline";
 
         if (route.name === "Scan") {
           return (
@@ -39,7 +32,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
               style={styles.scanButtonContainer}
             >
               <View style={styles.scanButton}>
-                <Ionicons name={icon} size={28} color="#fff" />
+                <Ionicons name={iconName} size={28} color="#fff" />
               </View>
             </TouchableOpacity>
           );
@@ -51,18 +44,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
             onPress={onPress}
             style={styles.tabButton}
           >
-            <Ionicons
-              name={icon}
-              size={24}
-              color={isFocused ? "#FF5C00" : "#777"}
-            />
-            <Text
-              style={{
-                color: isFocused ? "#FF5C00" : "#777",
-                fontSize: 12,
-                marginTop: 2,
-              }}
-            >
+            <Ionicons name={iconName} size={24} color={isFocused ? "#FF5C00" : "#777"} />
+            <Text style={{ color: isFocused ? "#FF5C00" : "#777", fontSize: 12, marginTop: 2 }}>
               {options.title}
             </Text>
           </TouchableOpacity>
@@ -77,22 +60,33 @@ export default function AppLayout() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (isMounted) setUser(session?.user ?? null);
+      } catch (err) {
+        console.error("Failed to get session:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     };
+
     checkUser();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      if (isMounted) setUser(session?.user ?? null);
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  if (loading) return <SplashScreen />; 
-  if (!user) return null; 
+  if (loading) return <SplashScreen />;
+  if (!user) return null;
 
   return (
     <Tabs
@@ -104,7 +98,8 @@ export default function AppLayout() {
       }}
       tabBar={(props) => <CustomTabBar {...props} />}
     >
-      <Tabs.Screen name="Home" options={{ title: "Home" }} />
+
+      <Tabs.Screen name="Dashboard" options={{ title: "Dashboard" }} />
       <Tabs.Screen name="Scan" options={{ title: "Scan" }} />
       <Tabs.Screen name="Profile" options={{ title: "Profile" }} />
     </Tabs>

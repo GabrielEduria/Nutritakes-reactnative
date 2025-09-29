@@ -28,7 +28,6 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
       
         <View style={styles.header}>
           <Text style={styles.title}>Nutrition Facts</Text>
-          <Text style={styles.appName}>NutriTakes</Text>
         </View>
 
         <View style={styles.thickLine} />
@@ -121,11 +120,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-  },
-  appName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#FF5C00",
   },
   row: {
     flexDirection: "row",

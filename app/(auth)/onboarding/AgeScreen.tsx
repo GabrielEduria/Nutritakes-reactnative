@@ -1,4 +1,3 @@
-// app/(auth)/onboarding/AgeScreen.tsx
 import { saveProfileField } from "@/lib/profileService";
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
