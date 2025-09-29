@@ -50,8 +50,8 @@ export default function LoginScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <BackgroundPattern>
+    <BackgroundPattern>
+     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -108,10 +108,11 @@ export default function LoginScreen() {
           </View>
         </LinearGradient>
       </KeyboardAvoidingView>
-      </BackgroundPattern>
+
       <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
       <SuccessModal visible={!!success} message={success ?? ""} onClose={() => setSuccess(null)} />
     </ScrollView>
+  </BackgroundPattern>
   );
 }
 

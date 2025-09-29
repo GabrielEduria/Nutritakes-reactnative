@@ -12,19 +12,22 @@ const icons = [
 
 const ICON_SIZE = 150;
 const ICON_SPACING = 280;
+const ICON_OPACITY = 0.03;
 
-export default function BackgroundPattern({ children }: { children?: React.ReactNode }) {
-  const rows = Math.ceil(height / ICON_SPACING);
-  const cols = Math.ceil(width / ICON_SPACING);
+export default function BackgroundPattern({ children }: { children: React.ReactNode }) {
+  // calculate how many rows and columns are needed to cover the screen
+  const rows = Math.ceil(height / ICON_SPACING) + 1;
+  const cols = Math.ceil(width / ICON_SPACING) + 1;
 
   const grid = [];
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const icon = icons[(row + col) % icons.length]; 
+  let id = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const icon = icons[(r + c) % icons.length]; // cycle through icons
       grid.push({
-        id: `${row}-${col}`,
-        top: row * ICON_SPACING,
-        left: col * ICON_SPACING,
+        id: id++,
+        top: r * ICON_SPACING,
+        left: c * ICON_SPACING,
         icon,
       });
     }
@@ -36,7 +39,10 @@ export default function BackgroundPattern({ children }: { children?: React.React
         <Image
           key={id}
           source={icon}
-          style={[styles.icon, { top, left, width: ICON_SIZE, height: ICON_SIZE }]}
+          style={[
+            styles.icon,
+            { top, left, width: ICON_SIZE, height: ICON_SIZE, opacity: ICON_OPACITY },
+          ]}
           resizeMode="contain"
         />
       ))}
@@ -52,7 +58,6 @@ const styles = StyleSheet.create({
   },
   icon: {
     position: "absolute",
-    opacity: 0.03, 
   },
   overlay: {
     flex: 1,
