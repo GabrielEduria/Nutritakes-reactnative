@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +17,9 @@ import {
   View,
 } from "react-native";
 import BackgroundPattern from "../components/background/BackgroundPattern";
+
+// Get device dimensions
+const { width, height } = Dimensions.get("window");
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -135,45 +139,50 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    paddingHorizontal: width * 0.06, // 6% padding
+    paddingVertical: height * 0.04, // 4% vertical padding
   },
-  logo: { width: 140, height: 140, marginBottom: 20 },
+  logo: {
+    width: width * 0.35, // responsive width
+    height: width * 0.35, // maintain square
+    marginBottom: height * 0.03,
+  },
   title: {
-    fontSize: 28,
+    fontSize: width * 0.07, 
     fontWeight: "700",
     color: "#0d0d0d",
-    marginBottom: 10,
+    marginBottom: height * 0.01,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: width * 0.04,
     color: "#333",
     textAlign: "center",
-    marginBottom: 30,
+    marginBottom: height * 0.04,
   },
   input: {
     backgroundColor: "#fff",
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    paddingVertical: height * 0.018,
+    paddingHorizontal: width * 0.04,
     borderRadius: 10,
-    marginBottom: 16,
-    fontSize: 16,
+    marginBottom: height * 0.02,
+    fontSize: width * 0.045,
     borderWidth: 1,
     borderColor: "#808080",
     width: "100%",
   },
-  error: { color: "red", marginBottom: 12, textAlign: "center" },
+  error: { color: "red", marginBottom: height * 0.015, textAlign: "center" },
   button: {
     backgroundColor: "#FF5C00",
-    paddingVertical: 16,
+    paddingVertical: height * 0.022,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: height * 0.01,
     elevation: 2,
     width: "100%",
   },
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
-  linkContainer: { marginTop: 20, alignItems: "center" },
-  linkText: { fontSize: 14, color: "#333" },
+  buttonText: { color: "#fff", fontSize: width * 0.045, fontWeight: "600" },
+  linkContainer: { marginTop: height * 0.025, alignItems: "center" },
+  linkText: { fontSize: width * 0.035, color: "#333" },
   linkBold: { color: "#FF5C00", fontWeight: "700" },
 });
