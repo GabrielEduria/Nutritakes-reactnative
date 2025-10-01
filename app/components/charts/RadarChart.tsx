@@ -5,8 +5,9 @@ import Svg, { Circle, Line, Polygon, Text as SvgText } from "react-native-svg";
 export type RadarChartData = {
   labels: string[];
   values: number[];
+  targetValues?: number[]; 
   maxValue?: number;
-  color?: string; 
+  color?: string;
 };
 
 type Props = {
@@ -15,11 +16,12 @@ type Props = {
 };
 
 const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
-  const { labels, values, maxValue, color = "#FF638455" } = data;
+  const { labels, values, targetValues, maxValue, color = "#FF638455" } = data;
   const N = labels.length;
   const center = size / 2;
   const radius = center * 0.8;
-  const maxVal = maxValue ?? Math.max(...values, 1);
+  const maxVal = maxValue ?? Math.max(...values, ...(targetValues || []), 1);
+
 
   const points = values.map((v, i) => {
     const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
@@ -27,6 +29,12 @@ const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
     return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`;
   });
 
+
+  const targetPoints = targetValues?.map((v, i) => {
+    const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
+    const r = (v / maxVal) * radius;
+    return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`;
+  });
 
   const levels = 4;
   const gridCircles = Array.from({ length: levels }, (_, i) => (
@@ -41,14 +49,12 @@ const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
     />
   ));
 
-
   const axes = labels.map((_, i) => {
     const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
     const x = center + radius * Math.cos(angle);
     const y = center + radius * Math.sin(angle);
     return <Line key={i} x1={center} y1={center} x2={x} y2={y} stroke="#ccc" strokeWidth={0.5} />;
   });
-
 
   const labelElements = labels.map((label, i) => {
     const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
@@ -75,7 +81,15 @@ const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
       <Svg width={size} height={size}>
         {gridCircles}
         {axes}
-        <Polygon points={points.join(" ")} fill={color} stroke={color.replace("22", "")} strokeWidth={2} />
+        {targetPoints && (
+          <Polygon
+            points={targetPoints.join(" ")}
+            fill="rgba(200,200,200,0.2)"
+            stroke="rgba(200,200,200,0.5)"
+            strokeWidth={1}
+          />
+        )}
+        <Polygon points={points.join(" ")} fill={color} stroke={color.replace("55", "")} strokeWidth={2} />
         {labelElements}
       </Svg>
     </View>
