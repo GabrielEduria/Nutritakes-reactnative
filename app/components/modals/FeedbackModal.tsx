@@ -31,6 +31,7 @@ const MealFeedbackModal: React.FC<MealFeedbackModalProps> = ({
       onSuccess?.("Feedback submitted successfully!");
       setFeedback("");
       onClose();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       onError?.("Failed to submit feedback");
     }

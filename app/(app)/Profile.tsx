@@ -186,12 +186,11 @@ export default function ProfileScreen() {
             <View style={styles.modalContainer}>
               <View style={styles.modalContent}>
                 {selectedMeal?.image_url && (
-                  <Image
-                    source={{ uri: selectedMeal.image_url }}
-                    style={styles.modalImage}
-                  />
+                  <Image source={{ uri: selectedMeal.image_url }} style={styles.modalImage} />
                 )}
+
                 {selectedMeal && <NutritionLabelCard meal={selectedMeal} />}
+
                 <View style={styles.modalActions}>
                   <TouchableOpacity
                     style={styles.feedbackButton}
@@ -201,11 +200,12 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.deleteButton}
-                    onPress={() => handleDelete(selectedMeal)}
+                    onPress={() => selectedMeal && handleDelete(selectedMeal)}
                   >
                     <Text style={styles.buttonText}>Delete</Text>
                   </TouchableOpacity>
                 </View>
+
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => setSelectedMeal(null)}
