@@ -2,7 +2,6 @@ import Analysis from "@/app/components/analysis/Analysis";
 import MacroSummaryCard from "@/app/components/cards/MacroSummaryCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";
 import { supabase } from "@/lib/supabase";
-import { MealWithId } from "@/types/meal";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -13,7 +12,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [macros, setMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, calories: 0 });
-  const [meals, setMeals] = useState<MealWithId[]>([]);
 
   useEffect(() => {
     let channel: any = null;
@@ -22,44 +20,27 @@ export default function Dashboard() {
       try {
         setLoading(true);
 
-        const { data: userData } = await supabase.auth.getUser();
-        const userId = userData?.user?.id;
+        const userRes = await supabase.auth.getUser();
+        const userId = userRes?.data?.user?.id;
         if (!userId) throw new Error("User not logged in");
 
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        // 1️⃣ Fetch today's meals (real columns only)
-        const { data: mealsData, error: mealsError } = await supabase
+        // ✅ Only fetch actual meal columns, ignore feedback
+        const { data: meals, error: mealsError } = await supabase
           .from("meals")
-          .select("id,name,calories,protein,carbs,fats,created_at")
+          .select(
+            "id, name, calories, protein, carbs, fats, fiber, servings, description, image_url, created_at"
+          )
           .eq("user_id", userId)
           .gte("created_at", startOfDay.toISOString())
           .order("created_at", { ascending: false });
 
         if (mealsError) throw mealsError;
 
-        const mealsList = mealsData || [];
-
-        // 2️⃣ Fetch feedback for these meals
-        const { data: feedbackData, error: feedbackError } = await supabase
-          .from("feedback")
-          .select("meal_id,message")
-          .in("meal_id", mealsList.map(m => m.id));
-
-        if (feedbackError) throw feedbackError;
-
-        // 3️⃣ Merge feedback into meals array
-        const mealsWithFeedback: MealWithId[] = mealsList.map(meal => ({
-          ...meal,
-          feedback: feedbackData?.find(f => f.meal_id === meal.id)?.message,
-        }));
-
-        setMeals(mealsWithFeedback);
-
-        // 4️⃣ Calculate macro totals
-        const totals = mealsWithFeedback.reduce(
-          (acc: Macros, meal: MealWithId) => ({
+        const totals = (meals || []).reduce(
+          (acc: Macros, meal: any) => ({
             protein: acc.protein + (meal.protein || 0),
             carbs: acc.carbs + (meal.carbs || 0),
             fats: acc.fats + (meal.fats || 0),
@@ -70,7 +51,6 @@ export default function Dashboard() {
 
         setMacros(totals);
 
-        // 5️⃣ Setup real-time subscription for meals
         if (!channel) {
           channel = supabase
             .channel(`meals_today:${userId}`)
@@ -113,13 +93,10 @@ export default function Dashboard() {
 
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Eating Activity</Text>
-              {meals.map(meal => (
-                <Text key={meal.id} style={styles.cardText}>
-                  {meal.name}: {meal.calories} kcal • {meal.protein}g protein • {meal.carbs}g carbs •{" "}
-                  {meal.fats}g fats
-                  {meal.feedback ? ` • Feedback: ${meal.feedback}` : ""}
-                </Text>
-              ))}
+              <Text style={styles.cardText}>
+                Today: {macros.calories} kcal • {macros.protein}g protein • {macros.carbs}g carbs •{" "}
+                {macros.fats}g fats
+              </Text>
             </View>
 
             <View style={styles.card}>
@@ -139,7 +116,6 @@ const styles = StyleSheet.create({
   background: { flex: 1 },
   scrollContainer: { flexGrow: 1, padding: 16, alignItems: "stretch" },
   header: { fontSize: 24, fontWeight: "700", color: "#0d0d0d", marginBottom: 16, textAlign: "center" },
-
   card: {
     width: "100%",
     backgroundColor: "#fff",
@@ -152,7 +128,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-
   cardTitle: { fontSize: 18, fontWeight: "700", marginBottom: 8 },
   cardText: { fontSize: 14, color: "#333" },
 });

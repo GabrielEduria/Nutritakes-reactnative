@@ -3,11 +3,12 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, StyleSheet, Text, View } from "react-native";
 import { ProgressChart } from "react-native-chart-kit";
 
-const screenWidth = Dimensions.get("window").width * 0.9;
-const DEFAULT_WEEKLY_TARGET = 14000; // default weekly calories
+const screenWidth = Dimensions.get("window").width * 0.8;
+const DEFAULT_WEEKLY_TARGET = 14000; 
 
 export default function Analysis() {
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [weeklyCalories, setWeeklyCalories] = useState(0);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
@@ -15,9 +16,10 @@ export default function Analysis() {
   useEffect(() => {
     let channelMeals: any = null;
 
-    async function fetchWeeklyCalories() {
+    const fetchWeeklyData = async () => {
       try {
         setLoading(true);
+
         const userRes = await supabase.auth.getUser();
         const userId = userRes?.data?.user?.id;
         if (!userId) {
@@ -31,39 +33,36 @@ export default function Analysis() {
         startOfWeek.setHours(0, 0, 0, 0);
         startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
 
-        // Fetch weekly meals
-        const { data: mealsResp, error: mealsError } = await supabase
+        const { data: meals, error } = await supabase
           .from("meals")
           .select("calories,created_at")
           .eq("user_id", userId)
           .gte("created_at", startOfWeek.toISOString());
 
-        if (mealsError) throw mealsError;
+        if (error) throw error;
 
-        const meals = mealsResp ?? [];
-        const totalCalories = meals.reduce((acc, meal: any) => acc + (meal.calories || 0), 0);
-
+        const totalCalories = (meals || []).reduce(
+          (acc, meal: any) => acc + (meal.calories || 0),
+          0
+        );
         setWeeklyCalories(totalCalories);
 
-        const ratio = DEFAULT_WEEKLY_TARGET > 0 ? Math.min(totalCalories / DEFAULT_WEEKLY_TARGET, 1) : 0;
+        const ratio = Math.min(totalCalories / DEFAULT_WEEKLY_TARGET, 1);
         setProgress(ratio);
 
         setMessage(
-          `You consumed ${totalCalories} kcal this week (${Math.round(ratio * 100)}% of the default ${DEFAULT_WEEKLY_TARGET} kcal goal).`
+          `You consumed ${totalCalories} kcal this week (${Math.round(ratio * 100)}% of your default goal ${DEFAULT_WEEKLY_TARGET} kcal).`
         );
       } catch (err: any) {
-        console.error("Analysis fetchWeeklyCalories error:", err);
+        console.error("Analysis fetchWeeklyData error:", err);
         setMessage("Failed to load analysis.");
-        setProgress(0);
-        setWeeklyCalories(0);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
-    fetchWeeklyCalories();
+    fetchWeeklyData();
 
-    // Real-time subscription to meals
     (async () => {
       const userRes = await supabase.auth.getUser();
       const userId = userRes?.data?.user?.id;
@@ -74,7 +73,7 @@ export default function Analysis() {
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "meals", filter: `user_id=eq.${userId}` },
-          () => fetchWeeklyCalories()
+          () => fetchWeeklyData()
         )
         .subscribe();
     })();
@@ -105,10 +104,10 @@ export default function Analysis() {
       ) : (
         <>
           <ProgressChart
-            data={{ data: [Math.min(Math.max(progress, 0), 1)] }}
+            data={{ data: [progress] }}
             width={screenWidth}
             height={160}
-            strokeWidth={8}
+            strokeWidth={14}
             radius={36}
             chartConfig={{
               backgroundGradientFrom: "#fff",
@@ -118,9 +117,8 @@ export default function Analysis() {
             }}
             hideLegend={true}
           />
-          <Text style={styles.scoreText}>
-            {weeklyCalories}/{DEFAULT_WEEKLY_TARGET} kcal
-          </Text>
+
+          <Text style={styles.scoreText}>{score}/100</Text>
           <Text style={styles.summaryText}>{message}</Text>
           <Text style={styles.feedbackText}>{feedback}</Text>
         </>
@@ -144,7 +142,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardTitle: { fontSize: 18, fontWeight: "700", marginBottom: 8 },
-  scoreText: { fontSize: 22, fontWeight: "700", marginTop: 8, color: "#FF5C00" },
+  scoreText: { fontSize: 28, fontWeight: "800", marginTop: 8, color: "#FF5C00" },
   summaryText: { marginTop: 10, fontSize: 14, color: "#333", textAlign: "center" },
   feedbackText: { marginTop: 8, fontSize: 15, fontWeight: "600" },
 });
