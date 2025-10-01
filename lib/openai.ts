@@ -1,4 +1,4 @@
-import { MealWithId } from "@/app/(app)/Profile";
+import { MealWithId } from "@/types/meal";
 import Constants from "expo-constants";
 import * as FileSystem from "expo-file-system/legacy";
 import { v4 as uuidv4 } from "uuid";
@@ -88,6 +88,7 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
       servings: mealData.servings ?? 1,
       description: mealData.description ?? "",
       image_url: imageUri,
+      created_at: ""
     };
 
     return meal;
@@ -107,6 +108,7 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
       servings: 1,
       description: "Failed to analyze meal",
       image_url: imageUri,
+      created_at: new Date().toISOString(), 
     };
   }
 };

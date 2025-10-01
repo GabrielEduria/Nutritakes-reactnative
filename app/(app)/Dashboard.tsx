@@ -2,6 +2,7 @@ import Analysis from "@/app/components/analysis/Analysis";
 import MacroSummaryCard from "@/app/components/cards/MacroSummaryCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";
 import { supabase } from "@/lib/supabase";
+import { MealWithId } from "@/types/meal";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -12,31 +13,53 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [macros, setMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, calories: 0 });
+  const [meals, setMeals] = useState<MealWithId[]>([]);
 
   useEffect(() => {
     let channel: any = null;
 
-    const fetchTodayMacros = async () => {
+    const fetchTodayMeals = async () => {
       try {
         setLoading(true);
-        const userRes = await supabase.auth.getUser();
-        const userId = userRes?.data?.user?.id;
+
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData?.user?.id;
         if (!userId) throw new Error("User not logged in");
 
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        const { data: meals, error: mealsError } = await supabase
+        // 1️⃣ Fetch today's meals (real columns only)
+        const { data: mealsData, error: mealsError } = await supabase
           .from("meals")
-          .select("protein,carbs,fats,calories,created_at")
+          .select("id,name,calories,protein,carbs,fats,created_at")
           .eq("user_id", userId)
           .gte("created_at", startOfDay.toISOString())
           .order("created_at", { ascending: false });
 
         if (mealsError) throw mealsError;
 
-        const totals = (meals || []).reduce(
-          (acc: Macros, meal: any) => ({
+        const mealsList = mealsData || [];
+
+        // 2️⃣ Fetch feedback for these meals
+        const { data: feedbackData, error: feedbackError } = await supabase
+          .from("feedback")
+          .select("meal_id,message")
+          .in("meal_id", mealsList.map(m => m.id));
+
+        if (feedbackError) throw feedbackError;
+
+        // 3️⃣ Merge feedback into meals array
+        const mealsWithFeedback: MealWithId[] = mealsList.map(meal => ({
+          ...meal,
+          feedback: feedbackData?.find(f => f.meal_id === meal.id)?.message,
+        }));
+
+        setMeals(mealsWithFeedback);
+
+        // 4️⃣ Calculate macro totals
+        const totals = mealsWithFeedback.reduce(
+          (acc: Macros, meal: MealWithId) => ({
             protein: acc.protein + (meal.protein || 0),
             carbs: acc.carbs + (meal.carbs || 0),
             fats: acc.fats + (meal.fats || 0),
@@ -47,25 +70,26 @@ export default function Dashboard() {
 
         setMacros(totals);
 
+        // 5️⃣ Setup real-time subscription for meals
         if (!channel) {
           channel = supabase
             .channel(`meals_today:${userId}`)
             .on(
               "postgres_changes",
               { event: "*", schema: "public", table: "meals", filter: `user_id=eq.${userId}` },
-              () => fetchTodayMacros()
+              () => fetchTodayMeals()
             )
             .subscribe();
         }
       } catch (err: any) {
-        console.error("Dashboard fetchTodayMacros error:", err);
+        console.error("Dashboard fetchTodayMeals error:", err);
         setError(err.message || "Failed to load dashboard data.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTodayMacros();
+    fetchTodayMeals();
 
     return () => {
       if (channel) supabase.removeChannel(channel);
@@ -89,9 +113,13 @@ export default function Dashboard() {
 
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Eating Activity</Text>
-              <Text style={styles.cardText}>
-                Today: {macros.calories} kcal • {macros.protein}g protein • {macros.carbs}g carbs • {macros.fats}g fats
-              </Text>
+              {meals.map(meal => (
+                <Text key={meal.id} style={styles.cardText}>
+                  {meal.name}: {meal.calories} kcal • {meal.protein}g protein • {meal.carbs}g carbs •{" "}
+                  {meal.fats}g fats
+                  {meal.feedback ? ` • Feedback: ${meal.feedback}` : ""}
+                </Text>
+              ))}
             </View>
 
             <View style={styles.card}>
