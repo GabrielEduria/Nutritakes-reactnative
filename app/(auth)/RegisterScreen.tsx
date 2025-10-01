@@ -27,30 +27,43 @@ export default function RegisterScreen() {
   const [showVerifyModal, setShowVerifyModal] = useState(false);
 
   const handleRegister = async () => {
-    if (!email || !password) {
-      setError("Please fill out all fields.");
-      return;
-    }
+      if (!email || !password) {
+        setError("Please fill out all fields.");
+        return;
+      }
 
-    setLoading(true);
-    setError("");
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.");
+        return;
+      }
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: "nutritakes://auth/confirm",
-      },
-    });
+      setLoading(true);
+      setError("");
 
-    if (error) {
-      setError(error.message);
-    } else {
-      setShowVerifyModal(true);
-    }
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: password.trim(),
+          options: { emailRedirectTo: "nutritakes://auth/confirm" },
+        });
 
-    setLoading(false);
-  };
+        if (error) {
+          console.error("SignUp Error:", error);
+          setError(error.message);
+        } else if (data.user) {
+    
+          setShowVerifyModal(true);
+        } else {
+     
+          setError("Unexpected error during registration. Try again.");
+        }
+      } catch (err: any) {
+        console.error("Unexpected error:", err);
+        setError("Failed to register. Check your internet connection.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <LinearGradient
