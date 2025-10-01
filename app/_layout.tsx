@@ -10,6 +10,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     const checkSession = async () => {
+      // Wait 3 seconds to show SplashScreen
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       setLoading(false);

@@ -75,10 +75,11 @@ export default function RegisterScreen() {
       style={styles.gradient}
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={{ flex: 1 }}
-        >
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} 
+          >
           <BackgroundPattern>
             <View style={styles.container}>
               <Image
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
-  logo: { width: 140, height: 140, marginBottom: 20 },
+  logo: { width: 140, height: 140,  },
   title: {
     fontSize: 28,
     fontWeight: "700",
