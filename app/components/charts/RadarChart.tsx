@@ -85,7 +85,7 @@ const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
           <Polygon
             points={targetPoints.join(" ")}
             fill="rgba(200,200,200,0.2)"
-            stroke="rgba(200,200,200,0.5)"
+            stroke="rgba(200,200,200,0.2)"
             strokeWidth={1}
           />
         )}

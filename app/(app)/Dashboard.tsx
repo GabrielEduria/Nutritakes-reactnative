@@ -1,44 +1,63 @@
-import Analysis from "@/app/components/analysis/Analysis";
-import MacroSummaryCard from "@/app/components/cards/MacroSummaryCard";
-import ErrorModal from "@/app/components/modals/ErrorModal";
 import { supabase } from "@/lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text } from "react-native";
+
+
+import MacroSummaryCard from "@/app/components/cards/MacroSummaryCard";
+import TodayCard from "@/app/components/cards/TodayCard";
+import ErrorModal from "@/app/components/modals/ErrorModal";
 
 type Macros = { protein: number; carbs: number; fats: number; calories: number };
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [macros, setMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, calories: 0 });
+  const [todayMacros, setTodayMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, calories: 0 });
+  const [weeklyMacros, setWeeklyMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, calories: 0 });
 
   useEffect(() => {
     let channel: any = null;
 
-    const fetchTodayMeals = async () => {
+    const fetchMeals = async () => {
       try {
         setLoading(true);
-
         const userRes = await supabase.auth.getUser();
         const userId = userRes?.data?.user?.id;
         if (!userId) throw new Error("User not logged in");
 
-        const startOfDay = new Date();
+        const now = new Date();
+        const startOfDay = new Date(now);
         startOfDay.setHours(0, 0, 0, 0);
+
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - 6);
+        startOfWeek.setHours(0, 0, 0, 0);
 
         const { data: meals, error: mealsError } = await supabase
           .from("meals")
-          .select(
-            "id, name, calories, protein, carbs, fats, fiber, servings, description, image_url, created_at"
-          )
+          .select("id, calories, protein, carbs, fats, created_at")
           .eq("user_id", userId)
-          .gte("created_at", startOfDay.toISOString())
+          .gte("created_at", startOfWeek.toISOString())
           .order("created_at", { ascending: false });
 
         if (mealsError) throw mealsError;
 
-        const totals = (meals || []).reduce(
+        // Daily macros
+        const todayTotals = (meals || [])
+          .filter((m: any) => new Date(m.created_at) >= startOfDay)
+          .reduce(
+            (acc: Macros, meal: any) => ({
+              protein: acc.protein + (meal.protein || 0),
+              carbs: acc.carbs + (meal.carbs || 0),
+              fats: acc.fats + (meal.fats || 0),
+              calories: acc.calories + (meal.calories || 0),
+            }),
+            { protein: 0, carbs: 0, fats: 0, calories: 0 }
+          );
+
+        // Weekly macros (totals)
+        const weekTotals = (meals || []).reduce(
           (acc: Macros, meal: any) => ({
             protein: acc.protein + (meal.protein || 0),
             carbs: acc.carbs + (meal.carbs || 0),
@@ -48,27 +67,28 @@ export default function Dashboard() {
           { protein: 0, carbs: 0, fats: 0, calories: 0 }
         );
 
-        setMacros(totals);
+        setTodayMacros(todayTotals);
+        setWeeklyMacros(weekTotals);
 
         if (!channel) {
           channel = supabase
-            .channel(`meals_today:${userId}`)
+            .channel(`meals:${userId}`)
             .on(
               "postgres_changes",
               { event: "*", schema: "public", table: "meals", filter: `user_id=eq.${userId}` },
-              () => fetchTodayMeals()
+              () => fetchMeals()
             )
             .subscribe();
         }
       } catch (err: any) {
-        console.error("Dashboard fetchTodayMeals error:", err);
+        console.error("Dashboard fetchMeals error:", err);
         setError(err.message || "Failed to load dashboard data.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTodayMeals();
+    fetchMeals();
 
     return () => {
       if (channel) supabase.removeChannel(channel);
@@ -84,24 +104,11 @@ export default function Dashboard() {
           <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 40 }} />
         ) : (
           <>
-            <MacroSummaryCard macros={macros} totalCalories={macros.calories} />
+            <TodayCard macros={todayMacros} dailyGoal={2000} />
 
-            <View style={{ width: "100%", marginVertical: 16 }}>
-              <Analysis />
-            </View>
+            <MacroSummaryCard macros={weeklyMacros} totalCalories={weeklyMacros.calories} />
 
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Eating Activity</Text>
-              <Text style={styles.cardText}>
-                Today: {macros.calories} kcal • {macros.protein}g protein • {macros.carbs}g carbs •{" "}
-                {macros.fats}g fats
-              </Text>
-            </View>
-
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Upcoming Features</Text>
-              <Text style={styles.cardText}>New widgets and insights will appear here.</Text>
-            </View>
+       
           </>
         )}
 
@@ -115,18 +122,4 @@ const styles = StyleSheet.create({
   background: { flex: 1 },
   scrollContainer: { flexGrow: 1, padding: 16, alignItems: "stretch" },
   header: { fontSize: 24, fontWeight: "700", color: "#0d0d0d", marginBottom: 16, textAlign: "center" },
-  card: {
-    width: "100%",
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
-    marginVertical: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  cardTitle: { fontSize: 18, fontWeight: "700", marginBottom: 8 },
-  cardText: { fontSize: 14, color: "#333" },
 });
