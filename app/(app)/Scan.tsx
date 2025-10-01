@@ -11,7 +11,7 @@ import ErrorModal from "@/app/components/modals/ErrorModal";
 import SuccessModal from "@/app/components/modals/SuccessModal";
 import { saveMeal } from "@/lib/MealService";
 import { NotFilipinoFoodError, recognizeMeal } from "@/lib/openai";
-import { MealWithId } from "./Profile";
+import { MealWithId } from "@/types/meal";
 
 export default function Scan() {  
   const [loading, setLoading] = useState(false);
@@ -154,7 +154,13 @@ const styles = StyleSheet.create({
   background: { flex: 1 },
   container: { paddingBottom: 40, paddingTop: 30, alignItems: "center", width: "100%" },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 16, color: "#212121" },
-  button: { backgroundColor: "#FF5C00", paddingVertical: 14, paddingHorizontal: 28, borderRadius: 12, alignItems: "center", marginBottom: 16, elevation: 3 },
+    button: {
+    backgroundColor: "#FF5C00",
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 12,
+  },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   previewImage: { width: 240, height: 240, borderRadius: 16, marginVertical: 20 },
   cardWrapper: { width: "90%", alignItems: "center" },

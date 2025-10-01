@@ -1,6 +1,6 @@
 
-import { MealWithId } from "@/app/(app)/Profile";
 import { supabase } from "@/lib/supabase";
+import { MealWithId } from "@/types/meal";
 
 /**
  * Save a meal to Supabase for each auth'dd users
