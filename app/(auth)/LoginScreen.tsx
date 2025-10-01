@@ -139,12 +139,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: width * 0.06, // 6% padding
-    paddingVertical: height * 0.04, // 4% vertical padding
+    paddingHorizontal: width * 0.06, 
+    paddingVertical: height * 0.04,
   },
   logo: {
-    width: width * 0.35, // responsive width
-    height: width * 0.35, // maintain square
+    width: width * 0.35, 
+    height: width * 0.35, 
     marginBottom: height * 0.03,
   },
   title: {
