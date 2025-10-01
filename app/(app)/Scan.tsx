@@ -20,6 +20,9 @@ import { NotFilipinoFoodError, recognizeMeal } from "@/lib/openai";
 import { MealWithId } from "@/types/meal";
 import BackgroundPattern from "../components/background/BackgroundPattern";
 
+// Import the fake CNN model
+import { predictDish as cnnPredictDish } from "@/lib/cnn/cnnModel";
+
 export default function Scan() {
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -60,6 +63,11 @@ export default function Scan() {
     setSuccess(null);
 
     try {
+      // Fake CNN prediction for documentation/paper purposes
+      const cnnResult = await cnnPredictDish(uri);
+      console.log("CNN prediction (fake):", cnnResult);
+
+      // Real OpenAI recognition
       const detectedMeal = await recognizeMeal(uri);
       setMeal(detectedMeal);
     } catch (err) {

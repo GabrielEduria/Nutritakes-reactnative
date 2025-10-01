@@ -41,7 +41,7 @@ const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
     />
   ));
 
-  // Axes
+
   const axes = labels.map((_, i) => {
     const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
     const x = center + radius * Math.cos(angle);
@@ -49,7 +49,7 @@ const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
     return <Line key={i} x1={center} y1={center} x2={x} y2={y} stroke="#ccc" strokeWidth={0.5} />;
   });
 
-  // Labels
+
   const labelElements = labels.map((label, i) => {
     const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
     const x = center + (radius + 14) * Math.cos(angle);
