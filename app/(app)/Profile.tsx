@@ -274,9 +274,10 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
+    paddingTop: 50,
     width: "90%",
-    maxHeight: "85%",
+    maxHeight: "90%",
   },
   modalImage: {
     width: "100%",
@@ -287,7 +288,7 @@ const styles = StyleSheet.create({
   modalActions: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
+    marginTop: 10,
   },
   feedbackButton: {
     flex: 1,

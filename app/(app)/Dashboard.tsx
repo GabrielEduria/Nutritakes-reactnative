@@ -27,7 +27,6 @@ export default function Dashboard() {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        // ✅ Only fetch actual meal columns, ignore feedback
         const { data: meals, error: mealsError } = await supabase
           .from("meals")
           .select(

@@ -77,9 +77,13 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
 
     const mealData = JSON.parse(textOutput);
 
+    if (!mealData.name || mealData.name === "Unknown Meal") {
+      throw new NotFilipinoFoodError("Scanned food could not be recognized as Filipino.");
+    }
+
     const meal: MealWithId = {
       id: uuidv4(),
-      name: mealData.name || "Unknown Meal",
+      name: mealData.name,
       calories: mealData.calories ?? 0,
       protein: mealData.protein ?? 0,
       carbs: mealData.carbs ?? 0,
@@ -88,27 +92,16 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
       servings: mealData.servings ?? 1,
       description: mealData.description ?? "",
       image_url: imageUri,
-      created_at: ""
+      created_at: new Date().toISOString(),
     };
 
     return meal;
 
   } catch (err) {
     console.error("OpenAI recognizeMeal error:", err);
+
     if (err instanceof NotFilipinoFoodError) throw err;
 
-    return {
-      id: uuidv4(),
-      name: "Unknown Meal",
-      calories: 0,
-      protein: 0,
-      carbs: 0,
-      fats: 0,
-      fiber: 0,
-      servings: 1,
-      description: "Failed to analyze meal",
-      image_url: imageUri,
-      created_at: new Date().toISOString(), 
-    };
+    throw new NotFilipinoFoodError("Scanned food could not be recognized as Filipino. Try again!");
   }
 };
