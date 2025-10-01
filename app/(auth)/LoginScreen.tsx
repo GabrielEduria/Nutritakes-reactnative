@@ -18,7 +18,6 @@ import {
 } from "react-native";
 import BackgroundPattern from "../components/background/BackgroundPattern";
 
-// Get device dimensions
 const { width, height } = Dimensions.get("window");
 
 export default function LoginScreen() {
