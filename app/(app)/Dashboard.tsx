@@ -1,20 +1,24 @@
 import { supabase } from "@/lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text } from "react-native";
-
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import MacroSummaryCard from "@/app/components/cards/MacroSummaryCard";
 import TodayCard from "@/app/components/cards/TodayCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";
+import BackgroundPattern from "../components/background/BackgroundPattern";
 
-type Macros = { protein: number; carbs: number; fats: number; calories: number };
+type Macros = { protein: number; carbs: number; fats: number; fiber: number; calories: number };
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [todayMacros, setTodayMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, calories: 0 });
-  const [weeklyMacros, setWeeklyMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, calories: 0 });
+  const [todayMacros, setTodayMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, fiber: 0, calories: 0 });
+  const [weeklyMacros, setWeeklyMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, fiber: 0, calories: 0 });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [prevWeeklyMacros, setPrevWeeklyMacros] = useState<Macros | undefined>(undefined);
+
+  const dailyGoals = { protein: 100, carbs: 250, fats: 70, fiber: 30, calories: 2000 };
 
   useEffect(() => {
     let channel: any = null;
@@ -34,41 +38,42 @@ export default function Dashboard() {
         startOfWeek.setDate(now.getDate() - 6);
         startOfWeek.setHours(0, 0, 0, 0);
 
+        const startOfPrevWeek = new Date(now);
+        startOfPrevWeek.setDate(now.getDate() - 13);
+        startOfPrevWeek.setHours(0, 0, 0, 0);
+
         const { data: meals, error: mealsError } = await supabase
           .from("meals")
-          .select("id, calories, protein, carbs, fats, created_at")
+          .select("id, calories, protein, carbs, fats, fiber, created_at")
           .eq("user_id", userId)
-          .gte("created_at", startOfWeek.toISOString())
-          .order("created_at", { ascending: false });
+          .gte("created_at", startOfPrevWeek.toISOString())
+          .order("created_at", { ascending: true });
 
         if (mealsError) throw mealsError;
 
-        // Daily macros
-        const todayTotals = (meals || [])
-          .filter((m: any) => new Date(m.created_at) >= startOfDay)
-          .reduce(
+        const calcMacros = (mealArray: any[]): Macros =>
+          mealArray.reduce(
             (acc: Macros, meal: any) => ({
               protein: acc.protein + (meal.protein || 0),
               carbs: acc.carbs + (meal.carbs || 0),
               fats: acc.fats + (meal.fats || 0),
+              fiber: acc.fiber + (meal.fiber || 0),
               calories: acc.calories + (meal.calories || 0),
             }),
-            { protein: 0, carbs: 0, fats: 0, calories: 0 }
+            { protein: 0, carbs: 0, fats: 0, fiber: 0, calories: 0 }
           );
 
-        // Weekly macros (totals)
-        const weekTotals = (meals || []).reduce(
-          (acc: Macros, meal: any) => ({
-            protein: acc.protein + (meal.protein || 0),
-            carbs: acc.carbs + (meal.carbs || 0),
-            fats: acc.fats + (meal.fats || 0),
-            calories: acc.calories + (meal.calories || 0),
-          }),
-          { protein: 0, carbs: 0, fats: 0, calories: 0 }
+        const todayTotals = calcMacros((meals || []).filter((m: any) => new Date(m.created_at) >= startOfDay));
+        const weekTotals = calcMacros((meals || []).filter((m: any) => new Date(m.created_at) >= startOfWeek));
+        const prevWeekTotals = calcMacros(
+          (meals || []).filter(
+            (m: any) => new Date(m.created_at) >= startOfPrevWeek && new Date(m.created_at) < startOfWeek
+          )
         );
 
         setTodayMacros(todayTotals);
         setWeeklyMacros(weekTotals);
+        setPrevWeeklyMacros(prevWeekTotals);
 
         if (!channel) {
           channel = supabase
@@ -95,23 +100,27 @@ export default function Dashboard() {
     };
   }, []);
 
+  const weeklyScore = Math.min(Math.round((weeklyMacros.calories / (dailyGoals.calories * 7)) * 100), 100);
+
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.header}>Welcome to NutriTakes!</Text>
+        <BackgroundPattern>
+          <Text style={styles.header}>Progress Report</Text>
+          <Text style={styles.subHeader}>Track your daily & weekly progress</Text>
 
-        {loading ? (
-          <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 40 }} />
-        ) : (
-          <>
-            <TodayCard macros={todayMacros} dailyGoal={2000} />
-
-            <MacroSummaryCard macros={weeklyMacros} totalCalories={weeklyMacros.calories} />
-
-       
-          </>
-        )}
-
+          {loading ? (
+            <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 40 }} />
+          ) : (
+            <>
+              <TodayCard macros={todayMacros} dailyGoal={dailyGoals.calories} />
+               <MacroSummaryCard macros={weeklyMacros} totalCalories={weeklyMacros.calories} weeklyScore={weeklyScore} />
+              <View style={{ width: "100%", marginVertical: 16 }}>
+                <Text style={styles.analysisHeader}>Analysis & Insights</Text>
+              </View>
+            </>
+          )}
+        </BackgroundPattern>
         <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
       </ScrollView>
     </LinearGradient>
@@ -121,5 +130,7 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   background: { flex: 1 },
   scrollContainer: { flexGrow: 1, padding: 16, alignItems: "stretch" },
-  header: { fontSize: 24, fontWeight: "700", color: "#0d0d0d", marginBottom: 16, textAlign: "center" },
+  header: { fontSize: 28, fontWeight: "700", color: "#0d0d0d", marginBottom: 4, textAlign: "left" },
+  subHeader: { fontSize: 14, color: "#333", marginBottom: 12, textAlign: "left" },
+  analysisHeader: { fontSize: 16, fontWeight: "700", marginBottom: 8 },
 });

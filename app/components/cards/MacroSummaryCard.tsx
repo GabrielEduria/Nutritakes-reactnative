@@ -7,45 +7,51 @@ type Macros = {
   carbs: number;
   fats: number;
   fiber?: number;
+  calories: number;
 };
 
 type Props = {
   macros: Macros;
   totalCalories: number;
+  weeklyScore?: number; 
 };
 
-const MacroSummaryCard: React.FC<Props> = ({ macros, totalCalories }) => {
+const MacroSummaryCard: React.FC<Props> = ({ macros, totalCalories, weeklyScore }) => {
   const radarLabels = ["Protein", "Carbs", "Fats", "Fiber"];
-  const radarValues = [
-    macros.protein,
-    macros.carbs,
-    macros.fats,
-    macros.fiber || 0,
-  ];
+  const radarValues = [macros.protein, macros.carbs, macros.fats, macros.fiber || 0];
 
   const macroItems = [
+    { label: "Calories", value: macros.calories },
     { label: "Protein", value: macros.protein },
     { label: "Carbs", value: macros.carbs },
     { label: "Fats", value: macros.fats },
     { label: "Fiber", value: macros.fiber || 0 },
   ];
 
-  // Radar chart data object
-  const radarData: RadarChartData & { strokeColor?: string } = {
+ 
+  const screenWidth = Dimensions.get("window").width;
+  const chartSize = screenWidth - 40; 
+
+  const radarData: RadarChartData = {
     labels: radarLabels,
     values: radarValues,
-    color: "rgba(255,92,0,0.4)", // FF5C00 fill
-    strokeColor: "#FF5C00",      // FF5C00 stroke
+    color: "rgba(255,92,0,0.4)", 
+    strokeColor: "#FF5C00",      
   };
 
   return (
     <View style={{ width: "100%" }}>
-      {/* Daily Food Log header outside the card */}
-      <Text style={styles.logHeader}>Daily Food Log</Text>
+
+      <View style={styles.headerContainer}>
+        <Text style={styles.progressHeader}>Weekly Progress</Text>
+        {weeklyScore !== undefined && (
+          <Text style={styles.scoreText}>Weekly Food Score: {weeklyScore}/100</Text>
+        )}
+      </View>
 
       <View style={styles.card}>
         <View style={styles.headerRow}>
-          <Text style={styles.header}>Daily Macro Summary</Text>
+          <Text style={styles.header}>Weekly Macro Summary</Text>
           <Text style={styles.subHeader}>{totalCalories} kcal</Text>
         </View>
 
@@ -59,10 +65,7 @@ const MacroSummaryCard: React.FC<Props> = ({ macros, totalCalories }) => {
         </View>
 
         <View style={styles.chartContainer}>
-          <RadarChart
-            data={radarData}
-            size={Dimensions.get("window").width * 0.8}
-          />
+          <RadarChart data={radarData} size={chartSize} />
         </View>
       </View>
     </View>
@@ -70,17 +73,25 @@ const MacroSummaryCard: React.FC<Props> = ({ macros, totalCalories }) => {
 };
 
 const styles = StyleSheet.create({
-  logHeader: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 8,
+  headerContainer: {
     marginLeft: 4,
+    marginTop: 10,
+  },
+  progressHeader: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#0d0d0d",
+  },
+  scoreText: {
+    fontSize: 16,
+    color: "#FF5C00",
+    marginTop: 2,
   },
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
-    padding: 20, // increased padding to avoid cutoff
+    paddingVertical: 20,
+    paddingHorizontal: 16,
     marginVertical: 12,
     shadowColor: "#000",
     shadowOpacity: 0.05,
@@ -99,17 +110,29 @@ const styles = StyleSheet.create({
   subHeader: { fontSize: 14, color: "#666" },
   macroRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between", 
     width: "100%",
     marginBottom: 16,
+    paddingHorizontal: 8, 
   },
-  macroItem: { alignItems: "center", width: 70 },
-  macroLabel: { fontSize: 14, fontWeight: "600", color: "#333", textAlign: "center" },
-  macroValue: { fontSize: 14, fontWeight: "700", color: "#FF5C00", textAlign: "center" },
+  macroItem: { alignItems: "center", width: 60 },
+  macroLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    textAlign: "center",
+  },
+  macroValue: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#FF5C00",
+    textAlign: "center",
+  },
   chartContainer: {
     alignItems: "center",
     justifyContent: "center",
     marginTop: 8,
+    overflow: "visible",
   },
 });
 
