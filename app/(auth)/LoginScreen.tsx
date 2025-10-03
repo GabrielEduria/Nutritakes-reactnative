@@ -52,16 +52,30 @@ export default function LoginScreen() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Please enter your email first.");
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "exp://127.0.0.1:19000", 
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess("Password reset link sent! Check your email.");
+    }
+  };
+
   return (
-    <LinearGradient
-      colors={["#FFFDD0", "#FFD580", "#FFB347"]}
-      style={styles.background}
-    >
+    <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} 
+          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
         >
           <BackgroundPattern>
             <View style={styles.container}>
@@ -90,6 +104,12 @@ export default function LoginScreen() {
                 onChangeText={setPassword}
                 secureTextEntry
               />
+
+              <TouchableOpacity onPress={handleForgotPassword}>
+                <Text style={{ color: "#FF5C00", fontSize: width * 0.035, textAlign: "right" }}>
+                  Forgot password?
+                </Text>
+              </TouchableOpacity>
 
               {error && <Text style={styles.error}>{error}</Text>}
 

@@ -75,7 +75,12 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
       throw new NotFilipinoFoodError("This food is not Filipino.");
     }
 
-    const mealData = JSON.parse(textOutput);
+    let mealData: any;
+    try {
+      mealData = JSON.parse(textOutput);
+    } catch {
+      throw new NotFilipinoFoodError("Scanned food could not be recognized as Filipino.");
+    }
 
     if (!mealData.name || mealData.name === "Unknown Meal") {
       throw new NotFilipinoFoodError("Scanned food could not be recognized as Filipino.");
@@ -98,10 +103,14 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
     return meal;
 
   } catch (err) {
-    console.error("OpenAI recognizeMeal error:", err);
+    if (__DEV__) {
+      console.warn("OpenAI recognizeMeal handled error:", err);
+    }
 
     if (err instanceof NotFilipinoFoodError) throw err;
 
-    throw new NotFilipinoFoodError("Scanned food could not be recognized as Filipino. Try again!");
+    throw new NotFilipinoFoodError(
+      "Scanned food could not be recognized as Filipino. Try again!"
+    );
   }
 };

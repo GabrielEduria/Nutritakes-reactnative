@@ -102,18 +102,6 @@ export default function ProfileScreen() {
     );
   };
 
-  const handleResetPassword = async () => {
-    if (!user?.email) return setError("No email found for this account");
-
-    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: "exp://127.0.0.1:19000",
-    });
-    if (error) {
-      setError("Failed to send password reset email. Try again.");
-    } else {
-      setSuccess("Password reset email sent successfully!");
-    }
-  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -142,15 +130,13 @@ export default function ProfileScreen() {
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.infoCard}>
             <Text style={styles.email}>{user.email ?? "Email Placeholder"}</Text>
-            <Text style={styles.verified}>
-              {user.emailVerified ? "Account Verified" : "Account Not Verified"}
+            <Text style={styles.verified}>✅ Account Verified
+              
             </Text>
           </View>
 
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
-              <Text style={styles.buttonText}>Reset Password</Text>
-            </TouchableOpacity>
+
             <TouchableOpacity style={styles.button} onPress={() => setFeedbackVisible(true)}>
               <Text style={styles.buttonText}>Give Feedback</Text>
             </TouchableOpacity>
@@ -177,44 +163,47 @@ export default function ProfileScreen() {
             )}
           </View>
 
-          <Modal
-            visible={!!selectedMeal}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setSelectedMeal(null)}
-          >
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                {selectedMeal?.image_url && (
-                  <Image source={{ uri: selectedMeal.image_url }} style={styles.modalImage} />
-                )}
+            <Modal
+              visible={!!selectedMeal}
+              transparent
+              animationType="slide"
+              onRequestClose={() => setSelectedMeal(null)}
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+                    {selectedMeal?.image_url && (
+                      <Image source={{ uri: selectedMeal.image_url }} style={styles.modalImage} />
+                    )}
 
-                {selectedMeal && <NutritionLabelCard meal={selectedMeal} />}
+                    {selectedMeal && <NutritionLabelCard meal={selectedMeal} />}
+                  </ScrollView>
 
-                <View style={styles.modalActions}>
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity
+                      style={styles.feedbackButton}
+                      onPress={() => setFeedbackVisible(true)}
+                    >
+                      <Text style={styles.buttonText}>Feedback</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => selectedMeal && handleDelete(selectedMeal)}
+                    >
+                      <Text style={styles.buttonText}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+
                   <TouchableOpacity
-                    style={styles.feedbackButton}
-                    onPress={() => setFeedbackVisible(true)}
+                    style={styles.closeButton}
+                    onPress={() => setSelectedMeal(null)}
                   >
-                    <Text style={styles.buttonText}>Feedback</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => selectedMeal && handleDelete(selectedMeal)}
-                  >
-                    <Text style={styles.buttonText}>Delete</Text>
+                    <Text style={styles.closeButtonText}>✕</Text>
                   </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={() => setSelectedMeal(null)}
-                >
-                  <Text style={styles.closeButtonText}>✕</Text>
-                </TouchableOpacity>
               </View>
-            </View>
-          </Modal>
+            </Modal>
+
 
           <FeedbackModal
             visible={feedbackVisible}
@@ -274,10 +263,11 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 14,
+    padding: 5,
     paddingTop: 50,
-    width: "90%",
+    width: "95%",
     maxHeight: "90%",
+    justifyContent: "flex-start",
   },
   modalImage: {
     width: "100%",
