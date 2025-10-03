@@ -15,8 +15,9 @@ export default function AuthLayout() {
       const { data, error } = await supabase.auth.getSession();
       if (error) throw error;
       setSession(data.session ?? null);
-    } catch (err: any) {
-      console.error("Failed to get session:", err);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_err: any) {
+
       setError("Failed to fetch session");
     } finally {
       setLoadingSession(false);
