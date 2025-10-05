@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import BackgroundPattern from "../components/background/BackgroundPattern";
@@ -29,9 +30,14 @@ export default function ProfileScreen() {
   const [loadingSession, setLoadingSession] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
   const [selectedMeal, setSelectedMeal] = useState<MealWithId | null>(null);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { width, height } = useWindowDimensions();
+
+  const isSmallScreen = width < 380;
+  const containerWidth = isSmallScreen ? "90%" : "85%";
+  const modalImageHeight = isSmallScreen ? 180 : 220;
 
   useEffect(() => {
     const getSession = async () => {
@@ -74,34 +80,29 @@ export default function ProfileScreen() {
   const handleDelete = (meal: MealWithId) => {
     if (!user?.id) return;
 
-    Alert.alert(
-      "Delete Meal",
-      `Are you sure you want to delete "${meal.name}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            const { error } = await supabase
-              .from("meals")
-              .delete()
-              .eq("id", meal.id)
-              .eq("user_id", user.id);
+    Alert.alert("Delete Meal", `Are you sure you want to delete "${meal.name}"?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          const { error } = await supabase
+            .from("meals")
+            .delete()
+            .eq("id", meal.id)
+            .eq("user_id", user.id);
 
-            if (error) {
-              setError("Failed to delete meal.");
-            } else {
-              setMeals(prev => prev.filter(m => m.id !== meal.id));
-              setSuccess("Meal deleted successfully!");
-              setSelectedMeal(null);
-            }
+          if (error) {
+            setError("Failed to delete meal.");
+          } else {
+            setMeals((prev) => prev.filter((m) => m.id !== meal.id));
+            setSuccess("Meal deleted successfully!");
+            setSelectedMeal(null);
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
-
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -127,26 +128,32 @@ export default function ProfileScreen() {
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <BackgroundPattern>
-        <ScrollView contentContainerStyle={styles.container}>
-          <View style={styles.infoCard}>
-            <Text style={styles.email}>{user.email ?? "Email Placeholder"}</Text>
-            <Text style={styles.verified}>✅ Account Verified
-              
+        <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 100 }]}>
+          <View style={[styles.infoCard, { width: containerWidth }]}>
+            <Text style={[styles.email, { fontSize: isSmallScreen ? 15 : 16 }]}>
+              {user.email ?? "Email Placeholder"}
+            </Text>
+            <Text style={[styles.verified, { fontSize: isSmallScreen ? 13 : 14 }]}>
+              ✅ Account Verified
             </Text>
           </View>
 
-          <View style={styles.actions}>
-
+          <View style={[styles.actions, { width: containerWidth }]}>
             <TouchableOpacity style={styles.button} onPress={() => setFeedbackVisible(true)}>
               <Text style={styles.buttonText}>Give Feedback</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.logout]} onPress={handleLogout}>
+            <TouchableOpacity
+              style={[styles.button, styles.logout]}
+              onPress={handleLogout}
+            >
               <Text style={styles.buttonText}>Logout</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.mealsSection}>
-            <Text style={styles.sectionTitle}>Your Meals</Text>
+          <View style={[styles.mealsSection, { width: containerWidth }]}>
+            <Text style={[styles.sectionTitle, { fontSize: isSmallScreen ? 17 : 18 }]}>
+              Your Meals
+            </Text>
             {loadingMeals ? (
               <ActivityIndicator size="large" color="#FF5C00" />
             ) : meals.length === 0 ? (
@@ -163,47 +170,64 @@ export default function ProfileScreen() {
             )}
           </View>
 
-            <Modal
-              visible={!!selectedMeal}
-              transparent
-              animationType="slide"
-              onRequestClose={() => setSelectedMeal(null)}
-            >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                  <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
-                    {selectedMeal?.image_url && (
-                      <Image source={{ uri: selectedMeal.image_url }} style={styles.modalImage} />
-                    )}
+          <Modal
+            visible={!!selectedMeal}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setSelectedMeal(null)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={[styles.modalContent, { width: containerWidth }]}>
+                <ScrollView
+                  contentContainerStyle={{
+                    paddingHorizontal: 10,
+                    paddingBottom: 80,
+                    alignItems: "center",
+                  }}
+                >
+                  {selectedMeal?.image_url && (
+                    <Image
+                      source={{ uri: selectedMeal.image_url }}
+                      style={[
+                        styles.modalImage,
+                        { height: modalImageHeight, width: "100%" },
+                      ]}
+                      resizeMode="cover"
+                    />
+                  )}
 
-                    {selectedMeal && <NutritionLabelCard meal={selectedMeal} />}
-                  </ScrollView>
+                  {selectedMeal && (
+                    <View style={{ width: "100%" }}>
+                      <NutritionLabelCard meal={selectedMeal} />
+                    </View>
+                  )}
+                </ScrollView>
 
-                  <View style={styles.modalActions}>
-                    <TouchableOpacity
-                      style={styles.feedbackButton}
-                      onPress={() => setFeedbackVisible(true)}
-                    >
-                      <Text style={styles.buttonText}>Feedback</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={() => selectedMeal && handleDelete(selectedMeal)}
-                    >
-                      <Text style={styles.buttonText}>Delete</Text>
-                    </TouchableOpacity>
-                  </View>
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={[styles.feedbackButton, { flex: 1, marginRight: 8 }]}
+                    onPress={() => setFeedbackVisible(true)}
+                  >
+                    <Text style={styles.buttonText}>Feedback</Text>
+                  </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={() => setSelectedMeal(null)}
+                    style={[styles.deleteButton, { flex: 1, marginLeft: 8 }]}
+                    onPress={() => selectedMeal && handleDelete(selectedMeal)}
                   >
-                    <Text style={styles.closeButtonText}>✕</Text>
+                    <Text style={styles.buttonText}>Delete</Text>
                   </TouchableOpacity>
                 </View>
-              </View>
-            </Modal>
 
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setSelectedMeal(null)}
+                >
+                  <Text style={styles.closeButtonText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
 
           <FeedbackModal
             visible={feedbackVisible}
@@ -214,8 +238,16 @@ export default function ProfileScreen() {
             onError={(msg) => setError(msg ?? null)}
           />
 
-          <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
-          <SuccessModal visible={!!success} message={success ?? ""} onClose={() => setSuccess(null)} />
+          <ErrorModal
+            visible={!!error}
+            message={error ?? ""}
+            onClose={() => setError(null)}
+          />
+          <SuccessModal
+            visible={!!success}
+            message={success ?? ""}
+            onClose={() => setSuccess(null)}
+          />
         </ScrollView>
       </BackgroundPattern>
     </LinearGradient>
@@ -224,34 +256,28 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  container: {
-    paddingBottom: 60,
-    paddingTop: 20,
-    alignItems: "center",
-    width: "100%",
-  },
+  container: { paddingTop: 20, alignItems: "center", width: "100%" },
   infoCard: {
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 12,
-    width: "90%",
     marginBottom: 20,
     elevation: 5,
   },
-  email: { color: "#000", fontSize: 16, marginBottom: 6 },
-  verified: { color: "#000", fontSize: 14 },
-  actions: { marginTop: 10, width: "90%" },
+  email: { color: "#000", marginBottom: 6 },
+  verified: { color: "#000" },
+  actions: { marginTop: 10 },
   button: {
     backgroundColor: "#FF5C00",
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
     marginBottom: 12,
   },
   logout: { backgroundColor: "#E53935" },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  mealsSection: { width: "90%", marginTop: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10, color: "#000" },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
+  mealsSection: { marginTop: 20 },
+  sectionTitle: { fontWeight: "bold", marginBottom: 10, color: "#000" },
   emptyText: { color: "#555", fontSize: 14, textAlign: "center", marginTop: 10 },
 
   modalContainer: {
@@ -262,38 +288,30 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 5,
+    borderRadius: 14,
     paddingTop: 50,
-    width: "95%",
     maxHeight: "90%",
-    justifyContent: "flex-start",
   },
   modalImage: {
-    width: "100%",
-    height: 180,
-    borderRadius: 10,
-    marginBottom: 12,
+    borderRadius: 12,
+    marginBottom: 16,
   },
   modalActions: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    paddingHorizontal: 10,
+    marginTop: 8,
   },
   feedbackButton: {
-    flex: 1,
-    marginRight: 8,
     padding: 12,
     backgroundColor: "#FF5C00",
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: "center",
   },
   deleteButton: {
-    flex: 1,
-    marginLeft: 8,
     padding: 12,
     backgroundColor: "#E53935",
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: "center",
   },
   closeButton: {
@@ -302,9 +320,5 @@ const styles = StyleSheet.create({
     right: 10,
     padding: 8,
   },
-  closeButtonText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-  },
+  closeButtonText: { fontSize: 20, fontWeight: "bold", color: "#333" },
 });

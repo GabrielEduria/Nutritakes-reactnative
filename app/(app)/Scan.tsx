@@ -70,11 +70,16 @@ export default function Scan() {
 
     try {
       const cnnResult = await cnnPredictDish(uri);
-      console.log("CNN prediction (mock):", cnnResult);
+      console.log("CNN prediction (fake):", cnnResult);
 
       const detectedMeal = await recognizeMeal(uri);
-      const mealWithImage = { ...detectedMeal, image_url: uri };
-      console.log("Meal set with image:", mealWithImage);
+
+      // ✅ Attach the image URI to the detected meal
+      const mealWithImage: MealWithId = {
+        ...detectedMeal,
+        image_url: uri,
+      };
+
       setMeal(mealWithImage);
     } catch (err) {
       if (err instanceof NotFilipinoFoodError) {
