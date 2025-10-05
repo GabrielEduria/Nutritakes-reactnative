@@ -7,7 +7,9 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -37,6 +39,7 @@ export default function ProfileScreen() {
 
   const isSmallScreen = width < 380;
   const containerWidth = isSmallScreen ? "90%" : "85%";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const modalImageHeight = isSmallScreen ? 180 : 220;
 
   useEffect(() => {
@@ -170,62 +173,56 @@ export default function ProfileScreen() {
             )}
           </View>
 
-          <Modal
+         <Modal
             visible={!!selectedMeal}
             transparent
             animationType="slide"
             onRequestClose={() => setSelectedMeal(null)}
           >
             <View style={styles.modalContainer}>
-              <View style={[styles.modalContent, { width: containerWidth }]}>
-                <ScrollView
-                  contentContainerStyle={{
-                    paddingHorizontal: 10,
-                    paddingBottom: 80,
-                    alignItems: "center",
-                  }}
-                >
-                  {selectedMeal?.image_url && (
-                    <Image
-                      source={{ uri: selectedMeal.image_url }}
-                      style={[
-                        styles.modalImage,
-                        { height: modalImageHeight, width: "100%" },
-                      ]}
-                      resizeMode="cover"
-                    />
-                  )}
+              <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+              >
+                <View style={styles.modalContent}>
+                  <ScrollView
+                    contentContainerStyle={styles.modalScrollContent}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    {selectedMeal?.image_url && (
+                      <Image
+                        source={{ uri: selectedMeal.image_url }}
+                        style={styles.modalImage}
+                        resizeMode="cover"
+                      />
+                    )}
 
-                  {selectedMeal && (
-                    <View style={{ width: "100%" }}>
-                      <NutritionLabelCard meal={selectedMeal} />
+                    {selectedMeal && <NutritionLabelCard meal={selectedMeal} />}
+
+                    <View style={styles.modalActions}>
+                      <TouchableOpacity
+                        style={styles.feedbackButton}
+                        onPress={() => setFeedbackVisible(true)}
+                      >
+                        <Text style={styles.buttonText}>Feedback</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => selectedMeal && handleDelete(selectedMeal)}
+                      >
+                        <Text style={styles.buttonText}>Delete</Text>
+                      </TouchableOpacity>
                     </View>
-                  )}
-                </ScrollView>
-
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={[styles.feedbackButton, { flex: 1, marginRight: 8 }]}
-                    onPress={() => setFeedbackVisible(true)}
-                  >
-                    <Text style={styles.buttonText}>Feedback</Text>
-                  </TouchableOpacity>
+                  </ScrollView>
 
                   <TouchableOpacity
-                    style={[styles.deleteButton, { flex: 1, marginLeft: 8 }]}
-                    onPress={() => selectedMeal && handleDelete(selectedMeal)}
+                    style={styles.closeButton}
+                    onPress={() => setSelectedMeal(null)}
                   >
-                    <Text style={styles.buttonText}>Delete</Text>
+                    <Text style={styles.closeButtonText}>✕</Text>
                   </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={() => setSelectedMeal(null)}
-                >
-                  <Text style={styles.closeButtonText}>✕</Text>
-                </TouchableOpacity>
-              </View>
+              </KeyboardAvoidingView>
             </View>
           </Modal>
 
@@ -280,45 +277,62 @@ const styles = StyleSheet.create({
   sectionTitle: { fontWeight: "bold", marginBottom: 10, color: "#000" },
   emptyText: { color: "#555", fontSize: 14, textAlign: "center", marginTop: 10 },
 
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.6)",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    paddingTop: 50,
-    maxHeight: "90%",
-  },
-  modalImage: {
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  modalActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 10,
-    marginTop: 8,
-  },
-  feedbackButton: {
-    padding: 12,
-    backgroundColor: "#FF5C00",
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  deleteButton: {
-    padding: 12,
-    backgroundColor: "#E53935",
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  closeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    padding: 8,
-  },
-  closeButtonText: { fontSize: 20, fontWeight: "bold", color: "#333" },
+modalContainer: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.6)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+modalContent: {
+  backgroundColor: "#fff",
+  borderRadius: 12,
+  padding: 16,
+  width: "95%",
+  maxHeight: "auto",
+  justifyContent: "flex-start",
+},
+modalScrollContent: {
+  paddingBottom: 120, 
+  alignItems: "center",
+},
+modalImage: {
+  width: "100%",
+  height: 180,
+  borderRadius: 10,
+  marginBottom: 5,
+  marginTop: 25,
+},
+modalActions: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  width: "100%",
+  marginTop: 20,
+},
+feedbackButton: {
+  flex: 1,
+  marginRight: 8,
+  padding: 12,
+  backgroundColor: "#FF5C00",
+  borderRadius: 8,
+  alignItems: "center",
+},
+deleteButton: {
+  flex: 1,
+  marginLeft: 8,
+  padding: 12,
+  backgroundColor: "#E53935",
+  borderRadius: 8,
+  alignItems: "center",
+},
+closeButton: {
+  position: "absolute",
+  top: 10,
+  right: 10,
+  padding: 8,
+},
+closeButtonText: {
+  fontSize: 20,
+  fontWeight: "bold",
+  color: "#333",
+},
 });
