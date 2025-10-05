@@ -19,7 +19,7 @@ const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
   const { labels, values, maxValue, color = "rgba(255,92,0,0.4)", strokeColor } = data;
   const N = labels.length;
   const center = size / 2;
-  const labelPadding = 24; // space for labels
+  const labelPadding = 24; 
   const radius = center * 0.8 - labelPadding;
   const maxVal = maxValue ?? Math.max(...values, 1);
 
