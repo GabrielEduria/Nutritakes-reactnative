@@ -3,7 +3,17 @@ import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+const { width, height } = Dimensions.get("window");
+const scale = width / 375;
 
 const CustomTabBar = ({ state, descriptors, navigation }: any) => {
   const router = useRouter();
@@ -33,24 +43,26 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
               style={styles.scanButtonContainer}
             >
               <View style={styles.scanButton}>
-                <Ionicons name={iconName} size={28} color="#fff" />
+                <Ionicons name={iconName} size={28 * scale} color="#fff" />
               </View>
             </TouchableOpacity>
           );
         }
 
         return (
-          <TouchableOpacity
-            key={route.key}
-            onPress={onPress}
-            style={styles.tabButton}
-          >
+          <TouchableOpacity key={route.key} onPress={onPress} style={styles.tabButton}>
             <Ionicons
               name={iconName}
-              size={24}
+              size={24 * scale}
               color={isFocused ? "#FF5C00" : "#777"}
             />
-            <Text style={{ color: isFocused ? "#FF5C00" : "#777", fontSize: 12, marginTop: 2 }}>
+            <Text
+              style={{
+                color: isFocused ? "#FF5C00" : "#777",
+                fontSize: 12 * scale,
+                marginTop: 2,
+              }}
+            >
               {options.title}
             </Text>
           </TouchableOpacity>
@@ -113,21 +125,21 @@ export default function AppLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
-    height: 50,
-    backgroundColor: "#FFFFFF", 
-    borderRadius: 50,
+    height: height * 0.07,
+    backgroundColor: "#FFFFFF",
+    borderRadius: width * 0.12,
     shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 5 },
     shadowRadius: 8,
     elevation: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: width * 0.04,
     alignItems: "center",
     justifyContent: "space-between",
     position: "absolute",
-    bottom: Platform.OS === "ios" ? 50 : 30, 
-    left: 5,
-    right: 5,
+    bottom: Platform.OS === "ios" ? height * 0.07 : height * 0.05,
+    left: width * 0.02,
+    right: width * 0.02,
   },
   tabButton: {
     flex: 1,
@@ -136,13 +148,13 @@ const styles = StyleSheet.create({
   scanButtonContainer: {
     flex: 1,
     alignItems: "center",
-    marginTop: -20, 
+    marginTop: -height * 0.03,
   },
   scanButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 35,
-    backgroundColor: "#FF5C00", 
+    width: width * 0.14,
+    height: width * 0.14,
+    borderRadius: width * 0.07,
+    backgroundColor: "#FF5C00",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -152,4 +164,3 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
 });
-

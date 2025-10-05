@@ -16,7 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context"; // ✅ updated dependency
+import { SafeAreaView } from "react-native-safe-area-context";
 import BackgroundPattern from "../components/background/BackgroundPattern";
 
 const { width, height } = Dimensions.get("window");
