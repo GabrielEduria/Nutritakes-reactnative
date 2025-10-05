@@ -1,7 +1,14 @@
 import { supabase } from "@/lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import MacroSummaryCard from "@/app/components/cards/MacroSummaryCard";
 import TodayCard from "@/app/components/cards/TodayCard";
@@ -10,11 +17,26 @@ import BackgroundPattern from "../components/background/BackgroundPattern";
 
 type Macros = { protein: number; carbs: number; fats: number; fiber: number; calories: number };
 
+const { width, height } = Dimensions.get("window");
+const scale = width / 375;
+
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [todayMacros, setTodayMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, fiber: 0, calories: 0 });
-  const [weeklyMacros, setWeeklyMacros] = useState<Macros>({ protein: 0, carbs: 0, fats: 0, fiber: 0, calories: 0 });
+  const [todayMacros, setTodayMacros] = useState<Macros>({
+    protein: 0,
+    carbs: 0,
+    fats: 0,
+    fiber: 0,
+    calories: 0,
+  });
+  const [weeklyMacros, setWeeklyMacros] = useState<Macros>({
+    protein: 0,
+    carbs: 0,
+    fats: 0,
+    fiber: 0,
+    calories: 0,
+  });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [prevWeeklyMacros, setPrevWeeklyMacros] = useState<Macros | undefined>(undefined);
 
@@ -100,37 +122,79 @@ export default function Dashboard() {
     };
   }, []);
 
-  const weeklyScore = Math.min(Math.round((weeklyMacros.calories / (dailyGoals.calories * 7)) * 100), 100);
+  const weeklyScore = Math.min(
+    Math.round((weeklyMacros.calories / (dailyGoals.calories * 7)) * 100),
+    100
+  );
 
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <BackgroundPattern>
-          <Text style={styles.header}>Progress Report</Text>
-          <Text style={styles.subHeader}>Track your daily & weekly progress</Text>
+          <View style={styles.content}>
+            <Text style={styles.header}>Progress Report</Text>
+            <Text style={styles.subHeader}>Track your daily & weekly progress</Text>
 
-          {loading ? (
-            <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 40 }} />
-          ) : (
-            <>
-              <TodayCard macros={todayMacros} dailyGoal={dailyGoals.calories} />
-               <MacroSummaryCard macros={weeklyMacros} totalCalories={weeklyMacros.calories} weeklyScore={weeklyScore} />
-              <View style={{ width: "100%", marginVertical: 16 }}>
-                <Text style={styles.analysisHeader}>Analysis & Insights</Text>
-              </View>
-            </>
-          )}
+            {loading ? (
+              <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: height * 0.05 }} />
+            ) : (
+              <>
+                <TodayCard macros={todayMacros} dailyGoal={dailyGoals.calories} />
+                <MacroSummaryCard
+                  macros={weeklyMacros}
+                  totalCalories={weeklyMacros.calories}
+                  weeklyScore={weeklyScore}
+                />
+                <View style={{ width: "100%", marginVertical: height * 0.02 }}>
+                  <Text style={styles.analysisHeader}>Analysis & Insights</Text>
+                </View>
+              </>
+            )}
+          </View>
         </BackgroundPattern>
-        <ErrorModal visible={!!error} message={error ?? ""} onClose={() => setError(null)} />
       </ScrollView>
+
+      <ErrorModal
+        visible={!!error}
+        message={error ?? ""}
+        onClose={() => setError(null)}
+      />
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   background: { flex: 1 },
-  scrollContainer: { flexGrow: 1, padding: 16, alignItems: "stretch" },
-  header: { fontSize: 28, fontWeight: "700", color: "#0d0d0d", marginBottom: 4, textAlign: "left" },
-  subHeader: { fontSize: 14, color: "#333", marginBottom: 12, textAlign: "left" },
-  analysisHeader: { fontSize: 16, fontWeight: "700", marginBottom: 8 },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: width * 0.05,
+    paddingBottom: height * 0.1, 
+  },
+  content: {
+    alignItems: "stretch",
+    justifyContent: "flex-start",
+    paddingTop: height * 0.03,
+  },
+  header: {
+    fontSize: 26 * scale,
+    fontWeight: "700",
+    color: "#0d0d0d",
+    marginBottom: 4,
+    textAlign: "left",
+  },
+  subHeader: {
+    fontSize: 14 * scale,
+    color: "#333",
+    marginBottom: height * 0.025,
+    textAlign: "left",
+  },
+  analysisHeader: {
+    fontSize: 16 * scale,
+    fontWeight: "700",
+    marginBottom: 8,
+    color: "#0d0d0d",
+  },
 });
