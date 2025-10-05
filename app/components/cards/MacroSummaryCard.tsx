@@ -1,5 +1,5 @@
 import React from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import RadarChart, { RadarChartData } from "../charts/RadarChart";
 
 type Macros = {
@@ -13,10 +13,15 @@ type Macros = {
 type Props = {
   macros: Macros;
   totalCalories: number;
-  weeklyScore?: number; 
+  weeklyScore?: number;
 };
 
 const MacroSummaryCard: React.FC<Props> = ({ macros, totalCalories, weeklyScore }) => {
+  const { width } = useWindowDimensions();
+
+  // ✅ Responsive chart size based on screen width
+  const chartSize = Math.min(Math.max(width * 0.7, 160), 240);
+
   const radarLabels = ["Protein", "Carbs", "Fats", "Fiber"];
   const radarValues = [macros.protein, macros.carbs, macros.fats, macros.fiber || 0];
 
@@ -28,20 +33,15 @@ const MacroSummaryCard: React.FC<Props> = ({ macros, totalCalories, weeklyScore 
     { label: "Fiber", value: macros.fiber || 0 },
   ];
 
- 
-  const screenWidth = Dimensions.get("window").width;
-  const chartSize = screenWidth - 40; 
-
   const radarData: RadarChartData = {
     labels: radarLabels,
     values: radarValues,
-    color: "rgba(255,92,0,0.4)", 
-    strokeColor: "#FF5C00",      
+    color: "rgba(255,92,0,0.4)",
+    strokeColor: "#FF5C00",
   };
 
   return (
     <View style={{ width: "100%" }}>
-
       <View style={styles.headerContainer}>
         <Text style={styles.progressHeader}>Weekly Progress</Text>
         {weeklyScore !== undefined && (
@@ -64,7 +64,7 @@ const MacroSummaryCard: React.FC<Props> = ({ macros, totalCalories, weeklyScore 
           ))}
         </View>
 
-        <View style={styles.chartContainer}>
+        <View style={[styles.chartContainer, { height: chartSize + 30 }]}>
           <RadarChart data={radarData} size={chartSize} />
         </View>
       </View>
@@ -110,12 +110,17 @@ const styles = StyleSheet.create({
   subHeader: { fontSize: 14, color: "#666" },
   macroRow: {
     flexDirection: "row",
-    justifyContent: "space-between", 
+    justifyContent: "space-between",
+    flexWrap: "wrap",
     width: "100%",
     marginBottom: 16,
-    paddingHorizontal: 8, 
+    paddingHorizontal: 8,
   },
-  macroItem: { alignItems: "center", width: 60 },
+  macroItem: {
+    alignItems: "center",
+    width: "20%",
+    marginVertical: 4,
+  },
   macroLabel: {
     fontSize: 14,
     fontWeight: "600",

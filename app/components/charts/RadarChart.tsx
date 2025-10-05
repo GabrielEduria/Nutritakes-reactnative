@@ -6,8 +6,8 @@ export type RadarChartData = {
   labels: string[];
   values: number[];
   maxValue?: number;
-  color?: string;        
-  strokeColor?: string;   
+  color?: string;
+  strokeColor?: string;
 };
 
 type Props = {
@@ -18,9 +18,13 @@ type Props = {
 const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
   const { labels, values, maxValue, color = "rgba(255,92,0,0.4)", strokeColor } = data;
   const N = labels.length;
-  const center = size / 2;
-  const labelPadding = 24; 
-  const radius = center * 0.8 - labelPadding;
+
+  const labelPadding = 30; 
+  const safePadding = 40;  
+  const totalSize = size + safePadding * 2; 
+  const center = totalSize / 2;
+  const radius = (size / 2) * 0.8;
+
   const maxVal = maxValue ?? Math.max(...values, 1);
 
   const points = values.map((v, i) => {
@@ -71,7 +75,7 @@ const RadarChart: React.FC<Props> = ({ data, size = 180 }) => {
 
   return (
     <View style={styles.container}>
-      <Svg width={size} height={size}>
+      <Svg width={totalSize} height={totalSize}>
         {gridCircles}
         {axes}
         <Polygon
