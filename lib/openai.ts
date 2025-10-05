@@ -72,7 +72,7 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
     textOutput = textOutput.replace(/```json|```/gi, "").trim();
 
     if (textOutput.toUpperCase() === "NOT A FILIPINO DISH") {
-      throw new NotFilipinoFoodError("This food is not Filipino.");
+      throw new NotFilipinoFoodError("Error please scan again!");
     }
 
     let mealData: any;
@@ -83,7 +83,7 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
     }
 
     if (!mealData.name || mealData.name === "Unknown Meal") {
-      throw new NotFilipinoFoodError("Scanned food could not be recognized as Filipino.");
+      throw new NotFilipinoFoodError("Error please scan again!");
     }
 
     const originalProtein = mealData.protein ?? 0;
