@@ -1,6 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -13,14 +13,17 @@ import {
 } from "react-native";
 import "react-native-get-random-values";
 
+import BackgroundPattern from "@/app/components/background/BackgroundPattern";
 import NutritionLabelCard from "@/app/components/cards/NutritionLabelCard";
 import ErrorModal from "@/app/components/modals/ErrorModal";
+import InternetRequiredModal from "@/app/components/modals/InternetRequiredModal";
 import SuccessModal from "@/app/components/modals/SuccessModal";
+
 import { predictDish as cnnPredictDish } from "@/lib/cnn/cnnModel";
+import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
 import { saveMeal } from "@/lib/MealService";
 import { NotFilipinoFoodError, recognizeMeal } from "@/lib/openai";
 import { MealWithId } from "@/types/meal";
-import BackgroundPattern from "../components/background/BackgroundPattern";
 
 export default function Scan() {
   const [loading, setLoading] = useState(false);
@@ -28,9 +31,18 @@ export default function Scan() {
   const [meal, setMeal] = useState<MealWithId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
   const { width } = useWindowDimensions();
+  const isOnline = useNetworkStatus();
+
+  useEffect(() => {
+    setShowModal(!isOnline);
+  }, [isOnline]);
 
   const pickImage = async () => {
+    if (!isOnline) return setShowModal(true);
+
     setError(null);
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return setError("Gallery permission is required!");
@@ -47,6 +59,8 @@ export default function Scan() {
   };
 
   const openCamera = async () => {
+    if (!isOnline) return setShowModal(true);
+
     setError(null);
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) return setError("Camera permission is required!");
@@ -63,6 +77,8 @@ export default function Scan() {
   };
 
   const processImage = async (uri: string) => {
+    if (!isOnline) return setShowModal(true);
+
     setLoading(true);
     setMeal(null);
     setError(null);
@@ -73,12 +89,7 @@ export default function Scan() {
       console.log("CNN prediction (fake):", cnnResult);
 
       const detectedMeal = await recognizeMeal(uri);
-
-      const mealWithImage: MealWithId = {
-        ...detectedMeal,
-        image_url: uri,
-      };
-
+      const mealWithImage: MealWithId = { ...detectedMeal, image_url: uri };
       setMeal(mealWithImage);
     } catch (err) {
       if (err instanceof NotFilipinoFoodError) {
@@ -94,6 +105,8 @@ export default function Scan() {
 
   const handleSaveMeal = async () => {
     if (!meal) return;
+    if (!isOnline) return setShowModal(true);
+
     setLoading(true);
     try {
       await saveMeal(meal);
@@ -192,6 +205,11 @@ export default function Scan() {
             visible={!!success}
             message={success ?? ""}
             onClose={() => setSuccess(null)}
+          />
+
+          <InternetRequiredModal
+            visible={showModal}
+            onRetry={() => setShowModal(!isOnline)}
           />
         </ScrollView>
       </BackgroundPattern>
