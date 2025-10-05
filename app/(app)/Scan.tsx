@@ -70,10 +70,12 @@ export default function Scan() {
 
     try {
       const cnnResult = await cnnPredictDish(uri);
-      console.log("CNN prediction (fake):", cnnResult);
+      console.log("CNN prediction (mock):", cnnResult);
 
       const detectedMeal = await recognizeMeal(uri);
-      setMeal(detectedMeal);
+      const mealWithImage = { ...detectedMeal, image_url: uri };
+      console.log("Meal set with image:", mealWithImage);
+      setMeal(mealWithImage);
     } catch (err) {
       if (err instanceof NotFilipinoFoodError) {
         setError(err.message);
@@ -110,7 +112,10 @@ export default function Scan() {
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
       <BackgroundPattern>
         <ScrollView
-          contentContainerStyle={[styles.container, { paddingHorizontal: isSmallScreen ? 12 : 20 }]}
+          contentContainerStyle={[
+            styles.container,
+            { paddingHorizontal: isSmallScreen ? 12 : 20, paddingBottom: 120 },
+          ]}
           showsVerticalScrollIndicator={false}
         >
           <Text style={[styles.title, { fontSize: isSmallScreen ? 20 : 22 }]}>
@@ -148,30 +153,26 @@ export default function Scan() {
             <Image
               source={{ uri: imageUri }}
               style={[styles.previewImage, { width: imageSize, height: imageSize }]}
+              resizeMode="cover"
             />
           )}
 
-{meal && (
-  <View style={[styles.cardWrapper, { width: containerWidth }]}>
-    {/* ✅ Display the captured image before the Nutrition label */}
-    {imageUri && (
-      <Image
-        source={{ uri: imageUri }}
-        style={[
-          styles.capturedImage,
-          { width: imageSize, height: imageSize },
-        ]}
-        resizeMode="cover"
-      />
-    )}
+          {meal && (
+            <View style={[styles.cardWrapper, { width: containerWidth }]}>
+              {meal.image_url && (
+                <Image
+                  source={{ uri: meal.image_url }}
+                  style={[styles.capturedImage, { height: isSmallScreen ? 180 : 220 }]}
+                  resizeMode="cover"
+                />
+              )}
+              <NutritionLabelCard meal={meal} />
 
-    <NutritionLabelCard meal={meal} />
-
-    <TouchableOpacity style={styles.saveButton} onPress={handleSaveMeal}>
-      <Text style={styles.saveButtonText}>Save Meal</Text>
-    </TouchableOpacity>
-  </View>
-)}
+              <TouchableOpacity style={styles.saveButton} onPress={handleSaveMeal}>
+                <Text style={styles.saveButtonText}>Save Meal</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <ErrorModal
             visible={!!error}
@@ -188,7 +189,6 @@ export default function Scan() {
             message={success ?? ""}
             onClose={() => setSuccess(null)}
           />
-          <View style={{ height: 100 }} />
         </ScrollView>
       </BackgroundPattern>
     </LinearGradient>
@@ -199,11 +199,15 @@ const styles = StyleSheet.create({
   background: { flex: 1 },
   container: {
     paddingTop: 20,
-    paddingBottom: 40,
     alignItems: "center",
     width: "100%",
   },
-  title: { fontWeight: "bold", marginBottom: 16, color: "#212121" },
+  title: {
+    fontWeight: "bold",
+    marginBottom: 16,
+    color: "#212121",
+    textAlign: "center",
+  },
   actions: {
     alignItems: "center",
     justifyContent: "center",
@@ -225,8 +229,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  previewImage: { borderRadius: 16, marginVertical: 20 },
-  cardWrapper: { alignItems: "center", marginTop: 20 },
+  previewImage: {
+    borderRadius: 16,
+    marginVertical: 20,
+    alignSelf: "center",
+  },
+  capturedImage: {
+    width: "100%",
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  cardWrapper: {
+    alignItems: "center",
+    marginTop: 20,
+  },
   saveButton: {
     marginTop: 12,
     width: "100%",
@@ -235,5 +251,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-  saveButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  saveButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
 });
