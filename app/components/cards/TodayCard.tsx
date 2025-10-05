@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 type Macros = { protein: number; carbs: number; fats: number; calories: number };
 
@@ -9,6 +9,8 @@ type TodayCardProps = {
 };
 
 export default function TodayCard({ macros, dailyGoal }: TodayCardProps) {
+  const { width } = useWindowDimensions();
+  const scale = width / 375; // iPhone X baseline
   const caloriesRemaining = Math.max(dailyGoal - macros.calories, 0);
   const progress = Math.min(macros.calories / dailyGoal, 1) * 100;
 
@@ -20,21 +22,29 @@ export default function TodayCard({ macros, dailyGoal }: TodayCardProps) {
   });
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.header}>Today - {todayDate}</Text>
-      <Text style={styles.calories}>{macros.calories} kcal consumed</Text>
-      <Text style={styles.dailyGoal}>Daily Goal: {dailyGoal} kcal</Text>
+    <View style={[styles.card, { padding: 16 * scale, borderRadius: 16 * scale }]}>
+      <Text style={[styles.header, { fontSize: 18 * scale }]}>
+        Today - {todayDate}
+      </Text>
+      <Text style={[styles.calories, { fontSize: 20 * scale }]}>
+        {macros.calories} kcal consumed
+      </Text>
+      <Text style={[styles.dailyGoal, { fontSize: 14 * scale }]}>
+        Daily Goal: {dailyGoal} kcal
+      </Text>
 
-      <View style={styles.progressBackground}>
-        <View style={[styles.progressBar, { width: `${progress}%` }]} />
+      <View style={[styles.progressBackground, { height: 10 * scale }]}>
+        <View style={[styles.progressBar, { width: `${progress}%`, height: 10 * scale }]} />
       </View>
 
-      <Text style={styles.remaining}>{caloriesRemaining} kcal remaining</Text>
+      <Text style={[styles.remaining, { fontSize: 12 * scale }]}>
+        {caloriesRemaining} kcal remaining
+      </Text>
 
       <View style={styles.macrosRow}>
-        <Text style={styles.macro}>Protein: {macros.protein}g</Text>
-        <Text style={styles.macro}>Carbs: {macros.carbs}g</Text>
-        <Text style={styles.macro}>Fats: {macros.fats}g</Text>
+        <Text style={[styles.macro, { fontSize: 12 * scale }]}>Protein: {macros.protein}g</Text>
+        <Text style={[styles.macro, { fontSize: 12 * scale }]}>Carbs: {macros.carbs}g</Text>
+        <Text style={[styles.macro, { fontSize: 12 * scale }]}>Fats: {macros.fats}g</Text>
       </View>
     </View>
   );
@@ -43,8 +53,6 @@ export default function TodayCard({ macros, dailyGoal }: TodayCardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
     marginVertical: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -52,18 +60,17 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  header: { fontSize: 18, fontWeight: "700", marginBottom: 8 },
-  calories: { fontSize: 20, fontWeight: "700", color: "#FF5C00", marginBottom: 4 },
-  dailyGoal: { fontSize: 14, color: "#555", marginBottom: 8 },
+  header: { fontWeight: "700", marginBottom: 8 },
+  calories: { fontWeight: "700", color: "#FF5C00", marginBottom: 4 },
+  dailyGoal: { color: "#555", marginBottom: 8 },
   progressBackground: {
-    height: 10,
     backgroundColor: "#eee",
     borderRadius: 5,
     overflow: "hidden",
     marginBottom: 4,
   },
-  progressBar: { height: 10, backgroundColor: "#FF5C00" },
-  remaining: { fontSize: 12, color: "#555", marginBottom: 12 },
+  progressBar: { backgroundColor: "#FF5C00" },
+  remaining: { color: "#555", marginBottom: 12 },
   macrosRow: { flexDirection: "row", justifyContent: "space-between" },
-  macro: { fontSize: 12, color: "#333" },
+  macro: { color: "#333" },
 });
