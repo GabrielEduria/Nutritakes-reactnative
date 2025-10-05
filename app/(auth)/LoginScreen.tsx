@@ -9,6 +9,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,7 +19,9 @@ import {
 } from "react-native";
 import BackgroundPattern from "../components/background/BackgroundPattern";
 
+// ✅ Use screen ratio for more consistent scaling
 const { width, height } = Dimensions.get("window");
+const scale = width / 375; // base width = iPhone 7 (375px)
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -59,7 +62,7 @@ export default function LoginScreen() {
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "exp://127.0.0.1:19000", 
+      redirectTo: "exp://127.0.0.1:19000",
     });
 
     if (error) {
@@ -71,71 +74,72 @@ export default function LoginScreen() {
 
   return (
     <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
         >
-          <BackgroundPattern>
-            <View style={styles.container}>
-              <Image
-                source={require("@/assets/images/icon/NT.png")}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-              <Text style={styles.title}>Welcome Back</Text>
-              <Text style={styles.subtitle}>Login with your email</Text>
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <BackgroundPattern>
+              <View style={styles.container}>
+                <Image
+                  source={require("@/assets/images/icon/NT.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                placeholderTextColor="#777"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                placeholderTextColor="#777"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
+                <Text style={styles.title}>Welcome Back</Text>
+                <Text style={styles.subtitle}>Login with your email</Text>
 
-              <TouchableOpacity onPress={handleForgotPassword}>
-                <Text style={{ color: "#FF5C00", fontSize: width * 0.035, textAlign: "right" }}>
-                  Forgot password?
-                </Text>
-              </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#777"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your password"
+                  placeholderTextColor="#777"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                />
 
-              {error && <Text style={styles.error}>{error}</Text>}
+                <TouchableOpacity onPress={handleForgotPassword}>
+                  <Text style={styles.forgotPassword}>Forgot password?</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.button, loading && { opacity: 0.6 }]}
-                onPress={handleLogin}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>
-                  {loading ? "Logging in..." : "Login"}
-                </Text>
-              </TouchableOpacity>
+                {error && <Text style={styles.error}>{error}</Text>}
 
-              <TouchableOpacity style={styles.linkContainer}>
-                <Text style={styles.linkText}>
-                  Don’t have an account?{" "}
-                  <Text
-                    style={styles.linkBold}
-                    onPress={() => router.push("/(auth)/RegisterScreen")}
-                  >
-                    Sign Up
+                <TouchableOpacity
+                  style={[styles.button, loading && { opacity: 0.6 }]}
+                  onPress={handleLogin}
+                  disabled={loading}
+                >
+                  <Text style={styles.buttonText}>
+                    {loading ? "Logging in..." : "Login"}
                   </Text>
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </BackgroundPattern>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.linkContainer}>
+                  <Text style={styles.linkText}>
+                    Don’t have an account?{" "}
+                    <Text
+                      style={styles.linkBold}
+                      onPress={() => router.push("/(auth)/RegisterScreen")}
+                    >
+                      Sign Up
+                    </Text>
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </BackgroundPattern>
+          </ScrollView>
         </KeyboardAvoidingView>
 
         <ErrorModal
@@ -148,7 +152,7 @@ export default function LoginScreen() {
           message={success ?? ""}
           onClose={() => setSuccess(null)}
         />
-      </ScrollView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -159,22 +163,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: width * 0.06, 
-    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.07,
+    paddingVertical: height * 0.02,
   },
   logo: {
-    width: width * 0.35, 
-    height: width * 0.35, 
-    },
+    width: width * 0.4,
+    height: width * 0.4,
+    marginBottom: height * 0.02,
+  },
   title: {
-    fontSize: width * 0.07, 
+    fontSize: 24 * scale,
     fontWeight: "700",
     color: "#0d0d0d",
-    marginBottom: height * 0.01,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: width * 0.04,
+    fontSize: 15 * scale,
     color: "#333",
     textAlign: "center",
     marginBottom: height * 0.04,
@@ -185,23 +189,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.04,
     borderRadius: 10,
     marginBottom: height * 0.02,
-    fontSize: width * 0.045,
+    fontSize: 16 * scale,
     borderWidth: 1,
     borderColor: "#808080",
     width: "100%",
   },
-  error: { color: "red", marginBottom: height * 0.015, textAlign: "center" },
+  forgotPassword: {
+    color: "#FF5C00",
+    fontSize: 13 * scale,
+    alignSelf: "flex-end",
+    marginBottom: height * 0.015,
+  },
+  error: {
+    color: "red",
+    marginBottom: height * 0.015,
+    textAlign: "center",
+    fontSize: 13 * scale,
+  },
   button: {
     backgroundColor: "#FF5C00",
     paddingVertical: height * 0.022,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: height * 0.01,
     elevation: 2,
     width: "100%",
+    marginBottom: height * 0.015,
   },
-  buttonText: { color: "#fff", fontSize: width * 0.045, fontWeight: "600" },
-  linkContainer: { marginTop: height * 0.025, alignItems: "center" },
-  linkText: { fontSize: width * 0.035, color: "#333" },
-  linkBold: { color: "#FF5C00", fontWeight: "700" },
+  buttonText: {
+    color: "#fff",
+    fontSize: 17 * scale,
+    fontWeight: "600",
+  },
+  linkContainer: {
+    marginTop: height * 0.015,
+    alignItems: "center",
+  },
+  linkText: {
+    fontSize: 13 * scale,
+    color: "#333",
+  },
+  linkBold: {
+    color: "#FF5C00",
+    fontWeight: "700",
+  },
 });
