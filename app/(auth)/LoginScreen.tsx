@@ -9,7 +9,6 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,11 +16,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context"; // ✅ updated dependency
 import BackgroundPattern from "../components/background/BackgroundPattern";
 
-// ✅ Use screen ratio for more consistent scaling
 const { width, height } = Dimensions.get("window");
-const scale = width / 375; // base width = iPhone 7 (375px)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const scale = width / 375; // base scaling from iPhone 7 width
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -172,13 +172,14 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.02,
   },
   title: {
-    fontSize: 24 * scale,
+    fontSize: width * 0.07,
     fontWeight: "700",
     color: "#0d0d0d",
     textAlign: "center",
+    marginBottom: height * 0.01,
   },
   subtitle: {
-    fontSize: 15 * scale,
+    fontSize: width * 0.04,
     color: "#333",
     textAlign: "center",
     marginBottom: height * 0.04,
@@ -189,14 +190,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.04,
     borderRadius: 10,
     marginBottom: height * 0.02,
-    fontSize: 16 * scale,
+    fontSize: width * 0.045,
     borderWidth: 1,
     borderColor: "#808080",
     width: "100%",
   },
   forgotPassword: {
     color: "#FF5C00",
-    fontSize: 13 * scale,
+    fontSize: width * 0.035,
     alignSelf: "flex-end",
     marginBottom: height * 0.015,
   },
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     color: "red",
     marginBottom: height * 0.015,
     textAlign: "center",
-    fontSize: 13 * scale,
+    fontSize: width * 0.035,
   },
   button: {
     backgroundColor: "#FF5C00",
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 17 * scale,
+    fontSize: width * 0.045,
     fontWeight: "600",
   },
   linkContainer: {
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   linkText: {
-    fontSize: 13 * scale,
+    fontSize: width * 0.035,
     color: "#333",
   },
   linkBold: {

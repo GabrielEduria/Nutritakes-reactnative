@@ -1,8 +1,10 @@
+import ConfirmationModal from "@/app/components/modals/ConfirmationModal";
 import { supabase } from "@/lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -15,11 +17,10 @@ import {
 } from "react-native";
 import BackgroundPattern from "../components/background/BackgroundPattern";
 
-import ConfirmationModal from "@/app/components/modals/ConfirmationModal";
+const { width, height } = Dimensions.get("window");
 
 export default function RegisterScreen() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,59 +28,53 @@ export default function RegisterScreen() {
   const [showVerifyModal, setShowVerifyModal] = useState(false);
 
   const handleRegister = async () => {
-      if (!email || !password) {
-        setError("Please fill out all fields.");
-        return;
+    if (!email || !password) {
+      setError("Please fill out all fields.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
+        options: { emailRedirectTo: "nutritakes://auth/confirm" },
+      });
+
+      if (error) {
+        console.error("SignUp Error:", error);
+        setError(error.message);
+      } else if (data.user) {
+        setShowVerifyModal(true);
+      } else {
+        setError("Unexpected error during registration. Try again.");
       }
-
-      if (password.length < 6) {
-        setError("Password must be at least 6 characters.");
-        return;
-      }
-
-      setLoading(true);
-      setError("");
-
-      try {
-        const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password: password.trim(),
-          options: { emailRedirectTo: "nutritakes://auth/confirm" },
-        });
-
-        if (error) {
-          console.error("SignUp Error:", error);
-          setError(error.message);
-        } else if (data.user) {
-    
-          setShowVerifyModal(true);
-        } else {
-     
-          setError("Unexpected error during registration. Try again.");
-        }
-      } catch (err: any) {
-        console.error("Unexpected error:", err);
-        setError("Failed to register. Check your internet connection.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    } catch (err: any) {
+      console.error("Unexpected error:", err);
+      setError("Failed to register. Check your internet connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <LinearGradient
-      colors={[
-        "rgba(255,253,208,0.9)",
-        "rgba(255,213,128,0.9)",
-        "rgba(255,179,71,0.9)",
-      ]}
-      style={styles.gradient}
+      colors={["#FFFDD0", "#FFD580", "#FFB347"]}
+      style={styles.background}
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} 
-          >
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+        >
           <BackgroundPattern>
             <View style={styles.container}>
               <Image
@@ -87,6 +82,7 @@ export default function RegisterScreen() {
                 style={styles.logo}
                 resizeMode="contain"
               />
+
               <Text style={styles.title}>Create Account</Text>
               <Text style={styles.subtitle}>Sign up to get started</Text>
 
@@ -147,69 +143,62 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
+  background: { flex: 1 },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    paddingHorizontal: width * 0.06,
+    paddingVertical: height * 0.01,
   },
-  logo: { width: 140, height: 140,  },
+  logo: {
+    width: width * 0.35,
+    height: width * 0.35,
+  },
   title: {
-    fontSize: 28,
+    fontSize: width * 0.07,
     fontWeight: "700",
     color: "#0d0d0d",
-    marginBottom: 10,
+    marginBottom: height * 0.01,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: width * 0.04,
     color: "#333",
     textAlign: "center",
-    marginBottom: 30,
+    marginBottom: height * 0.04,
   },
   input: {
     backgroundColor: "#fff",
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    paddingVertical: height * 0.018,
+    paddingHorizontal: width * 0.04,
     borderRadius: 10,
-    marginBottom: 16,
-    fontSize: 16,
+    marginBottom: height * 0.02,
+    fontSize: width * 0.045,
     borderWidth: 1,
     borderColor: "#808080",
     width: "100%",
   },
   error: {
     color: "red",
-    marginBottom: 12,
+    marginBottom: height * 0.015,
     textAlign: "center",
   },
   button: {
     backgroundColor: "#FF5C00",
-    paddingVertical: 16,
+    paddingVertical: height * 0.022,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: height * 0.01,
     elevation: 2,
     width: "100%",
   },
   buttonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: width * 0.045,
     fontWeight: "600",
   },
-  linkContainer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  linkText: {
-    fontSize: 14,
-    color: "#333",
-  },
-  linkBold: {
-    color: "#FF5C00",
-    fontWeight: "700",
-  },
+  linkContainer: { marginTop: height * 0.025, alignItems: "center" },
+  linkText: { fontSize: width * 0.035, color: "#333" },
+  linkBold: { color: "#FF5C00", fontWeight: "700" },
 });
