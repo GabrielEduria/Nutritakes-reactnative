@@ -74,7 +74,6 @@ export default function Scan() {
 
       const detectedMeal = await recognizeMeal(uri);
 
-      // ✅ Attach the image URI to the detected meal
       const mealWithImage: MealWithId = {
         ...detectedMeal,
         image_url: uri,
