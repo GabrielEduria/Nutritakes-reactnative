@@ -151,14 +151,27 @@ export default function Scan() {
             />
           )}
 
-          {meal && (
-            <View style={[styles.cardWrapper, { width: containerWidth }]}>
-              <NutritionLabelCard meal={meal} />
-              <TouchableOpacity style={styles.saveButton} onPress={handleSaveMeal}>
-                <Text style={styles.saveButtonText}>Save Meal</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+{meal && (
+  <View style={[styles.cardWrapper, { width: containerWidth }]}>
+    {/* ✅ Display the captured image before the Nutrition label */}
+    {imageUri && (
+      <Image
+        source={{ uri: imageUri }}
+        style={[
+          styles.capturedImage,
+          { width: imageSize, height: imageSize },
+        ]}
+        resizeMode="cover"
+      />
+    )}
+
+    <NutritionLabelCard meal={meal} />
+
+    <TouchableOpacity style={styles.saveButton} onPress={handleSaveMeal}>
+      <Text style={styles.saveButtonText}>Save Meal</Text>
+    </TouchableOpacity>
+  </View>
+)}
 
           <ErrorModal
             visible={!!error}
