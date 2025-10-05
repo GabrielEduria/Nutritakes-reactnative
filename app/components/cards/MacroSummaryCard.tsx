@@ -19,7 +19,7 @@ type Props = {
 const MacroSummaryCard: React.FC<Props> = ({ macros, totalCalories, weeklyScore }) => {
   const { width } = useWindowDimensions();
 
-  // ✅ Responsive chart size based on screen width
+
   const chartSize = Math.min(Math.max(width * 0.7, 160), 240);
 
   const radarLabels = ["Protein", "Carbs", "Fats", "Fiber"];
