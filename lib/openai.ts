@@ -86,11 +86,15 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
       throw new NotFilipinoFoodError("Scanned food could not be recognized as Filipino.");
     }
 
+    const originalProtein = mealData.protein ?? 0;
+    const adjustedProtein =
+      originalProtein > 30 ? Math.max(originalProtein - 10, 0) : originalProtein;
+
     const meal: MealWithId = {
       id: uuidv4(),
       name: mealData.name,
       calories: mealData.calories ?? 0,
-      protein: mealData.protein ?? 0,
+      protein: adjustedProtein, 
       carbs: mealData.carbs ?? 0,
       fats: mealData.fats ?? 0,
       fiber: mealData.fiber ?? 0,

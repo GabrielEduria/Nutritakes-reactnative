@@ -1,5 +1,12 @@
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
 export type NutritionInfo = {
   name: string;
@@ -18,78 +25,98 @@ export type MealWithId = NutritionInfo & {
 };
 
 type NutritionLabelCardProps = {
-  meal: MealWithId;
+  meal?: MealWithId;
+  loading?: boolean;
 };
 
-const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
+const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({
+  meal,
+  loading = false,
+}) => {
+  const { width } = useWindowDimensions();
+  const isSmall = width < 360;
+  const fontScale = isSmall ? 0.9 : 1;
+
+  if (loading || !meal) {
+
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={["#f2f2f2", "#e0e0e0", "#f2f2f2"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.card, styles.skeletonCard]}
+        >
+          <ActivityIndicator size="large" color="#FF5C00" />
+          <Text style={styles.loadingText}>Analyzing nutrition...</Text>
+        </LinearGradient>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-      
         <View style={styles.header}>
-          <Text style={styles.title}>Nutrition Facts</Text>
+          <Text
+            style={[
+              styles.title,
+              { fontSize: 22 * fontScale },
+            ]}
+            numberOfLines={1}
+          >
+            Nutrition Facts
+          </Text>
         </View>
 
         <View style={styles.thickLine} />
 
         <View style={styles.row}>
-          <Text style={styles.label}>Name</Text>
-          <Text style={styles.value}>{meal.name}</Text>
+          <Text style={[styles.label, { fontSize: 16 * fontScale }]}>Name</Text>
+          <Text
+            style={[styles.value, { fontSize: 16 * fontScale }]}
+            numberOfLines={2}
+          >
+            {meal.name}
+          </Text>
         </View>
+
         <View style={styles.line} />
 
         <View style={styles.row}>
-          <Text style={[styles.label, styles.caloriesLabel]}>Calories</Text>
-          <Text style={[styles.value, styles.caloriesValue]}>
+          <Text
+            style={[styles.label, styles.caloriesLabel, { fontSize: 18 * fontScale }]}
+          >
+            Calories
+          </Text>
+          <Text
+            style={[styles.value, styles.caloriesValue, { fontSize: 18 * fontScale }]}
+          >
             {meal.calories} kcal
           </Text>
         </View>
+
         <View style={styles.thickLine} />
 
-        <View style={styles.row}>
-          <Text style={[styles.label, styles.macroLabel]}>Protein</Text>
-          <Text style={[styles.value, styles.macroValue]}>
-            {meal.protein} g
-          </Text>
-        </View>
-        <View style={styles.line} />
-
-        <View style={styles.row}>
-          <Text style={[styles.label, styles.macroLabel]}>Carbs</Text>
-          <Text style={[styles.value, styles.macroValue]}>{meal.carbs} g</Text>
-        </View>
-        <View style={styles.line} />
-
-        <View style={styles.row}>
-          <Text style={[styles.label, styles.macroLabel]}>Fats</Text>
-          <Text style={[styles.value, styles.macroValue]}>{meal.fats} g</Text>
-        </View>
+        <MacroRow label="Protein" value={`${meal.protein} g`} fontScale={fontScale} />
+        <MacroRow label="Carbs" value={`${meal.carbs} g`} fontScale={fontScale} />
+        <MacroRow label="Fats" value={`${meal.fats} g`} fontScale={fontScale} />
 
         {meal.fiber !== undefined && (
-          <>
-            <View style={styles.line} />
-            <View style={styles.row}>
-              <Text style={styles.label}>Fiber</Text>
-              <Text style={styles.value}>{meal.fiber} g</Text>
-            </View>
-          </>
+          <MacroRow label="Fiber" value={`${meal.fiber} g`} fontScale={fontScale} />
         )}
 
         {meal.servings !== undefined && (
-          <>
-            <View style={styles.line} />
-            <View style={styles.row}>
-              <Text style={styles.label}>Servings</Text>
-              <Text style={styles.value}>{meal.servings}</Text>
-            </View>
-          </>
+          <MacroRow label="Servings" value={`${meal.servings}`} fontScale={fontScale} />
         )}
 
         {meal.description && (
           <>
             <View style={styles.bottomLine} />
             <View style={styles.descriptionContainer}>
-              <Text style={styles.description}>{meal.description}</Text>
+              <Text style={[styles.description, { fontSize: 14 * fontScale }]}>
+                {meal.description}
+              </Text>
             </View>
           </>
         )}
@@ -98,18 +125,50 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({ meal }) => {
   );
 };
 
+const MacroRow = ({
+  label,
+  value,
+  fontScale,
+}: {
+  label: string;
+  value: string;
+  fontScale: number;
+}) => (
+  <>
+    <View style={styles.line} />
+    <View style={styles.row}>
+      <Text style={[styles.label, styles.macroLabel, { fontSize: 16 * fontScale }]}>
+        {label}
+      </Text>
+      <Text style={[styles.value, styles.macroValue, { fontSize: 16 * fontScale }]}>
+        {value}
+      </Text>
+    </View>
+  </>
+);
+
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     marginVertical: 12,
-    marginBottom: 20,
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     width: "90%",
     elevation: 3,
+  },
+  skeletonCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 200,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#444",
+    fontWeight: "500",
   },
   header: {
     flexDirection: "row",
@@ -118,7 +177,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   title: {
-    fontSize: 24,
     fontWeight: "bold",
   },
   row: {
@@ -129,13 +187,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   label: {
-    fontSize: 16,
     fontWeight: "500",
   },
   value: {
-    fontSize: 16,
     fontWeight: "400",
     textAlign: "right",
+    flexShrink: 1,
+    maxWidth: "60%",
   },
   thickLine: {
     borderBottomColor: "#000",
@@ -154,11 +212,9 @@ const styles = StyleSheet.create({
   },
   caloriesLabel: {
     fontWeight: "bold",
-    fontSize: 18,
   },
   caloriesValue: {
     fontWeight: "bold",
-    fontSize: 18,
   },
   macroLabel: {
     fontWeight: "bold",
@@ -171,7 +227,6 @@ const styles = StyleSheet.create({
   },
   description: {
     textAlign: "left",
-    fontSize: 14,
     color: "#333",
   },
 });
