@@ -74,3 +74,4 @@ const styles = StyleSheet.create({
   macrosRow: { flexDirection: "row", justifyContent: "space-between" },
   macro: { color: "#333" },
 });
+  
