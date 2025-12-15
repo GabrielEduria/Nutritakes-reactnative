@@ -1,27 +1,27 @@
-import 'dotenv/config';
-
 export default {
   expo: {
     name: "NutriTakes",
-    slug: "NutriTakes-ReactNative",   
+    slug: "NutriTakes-ReactNative",
     version: "1.0.0",
     scheme: "nutritakes",
     orientation: "portrait",
     icon: "./assets/images/NT.png",
     userInterfaceStyle: "automatic",
-    ios: {
-      supportsTablet: true
-    },
+    ios: { supportsTablet: true },
     android: {
+      package: "com.anonymous.NutriTakesReactNative",
       adaptiveIcon: {
         foregroundImage: "./assets/images/NT.png",
         backgroundColor: "#E6F4FE"
       },
-      package: "com.anonymous.NutriTakesReactNative",
       permissions: [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ]
+        "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET"
+      ],
+      versionCode: 1,
+      minSdkVersion: 21,
+      targetSdkVersion: 33
     },
     plugins: [
       "expo-router",
@@ -38,12 +38,10 @@ export default {
       "expo-camera"
     ],
     extra: {
-      OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-      SUPABASE_URL: process.env.SUPABASE_URL,
-      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-      eas: {
-        projectId: "4fd94f75-2e91-4bb2-8fe7-a2697b5daafc"
-      }
+      OPENAI_API_KEY: "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",
+      SUPABASE_URL: "https://iexprssfhpppieowzouu.supabase.co",
+      SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlleHByc3NmaHBwcGllb3d6b3V1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyODE3MDQsImV4cCI6MjA3Mzg1NzcwNH0.6PRScjEYB9690qb_KHq-H9mpiQW1NPIOAaGVRGjt5CE",
+      eas: { projectId: "4fd94f75-2e91-4bb2-8fe7-a2697b5daafc" }
     }
   }
 };

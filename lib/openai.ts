@@ -39,26 +39,34 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
               {
                 type: "input_text",
                 text: `
-                  You are a Filipino cuisine nutrition expert with detailed knowledge of Filipino dishes, ingredients, and protein sources.
-                  Carefully analyze the image and identify ONLY Filipino dishes. Include the specific meat or protein in the dish.
-                  Your response MUST be strictly valid JSON in this exact format:
-                  {
-                    "name": "string",
-                    "calories": number,
-                    "protein": number,
-                    "carbs": number,
-                    "fats": number,
-                    "fiber": number,
-                    "servings": number,
-                    "description": "string"
-                  }
-                  If the dish is NOT Filipino, respond exactly with "NOT A FILIPINO DISH".
-                  Guidelines:
-                  - Include multiple items if present.
-                  - Prioritize Filipino dishes over generic or non-local foods.
-                  - Do not include explanations, extra text, or code blocks — only valid JSON or NOT A FILIPINO DISH.
-                  - Use realistic portion sizes and nutritional estimates based on standard Filipino meals.
-                `
+You are a Filipino cuisine nutrition expert with detailed knowledge of Filipino dishes, ingredients, and protein sources.
+
+Carefully analyze the image and do ONE of the following:
+
+1) If the food is a clear Filipino dish:
+Return STRICTLY VALID JSON in this EXACT format:
+{
+  "name": "string",
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fats": number,
+  "fiber": number,
+  "servings": number,
+  "description": "string"
+}
+
+2) Otherwise, return EXACTLY ONE of these strings (no punctuation, no extra words):
+NOT_FILIPINO
+BAD_CAMERA_ANGLE
+BLURRY_IMAGE
+UNKNOWN_FOOD
+
+Rules:
+- Output must be EITHER valid JSON OR one of the exact strings above
+- Do NOT include explanations, markdown, or extra text
+- Use realistic portion sizes based on Filipino meals
+`
               },
               { type: "input_image", image_url: imageDataUrl },
             ],
@@ -68,11 +76,21 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
     });
 
     const data = await response.json();
-    let textOutput: string = data.output?.[0]?.content?.[0]?.text || "{}";
-    textOutput = textOutput.replace(/```json|```/gi, "").trim();
+    let textOutputRaw: string = data.output?.[0]?.content?.[0]?.text ?? "";
+    let textOutput = textOutputRaw.trim();
 
-    if (textOutput.toUpperCase() === "NOT A FILIPINO DISH") {
-      throw new NotFilipinoFoodError("Error please scan again!");
+    const upperText = textOutput.toUpperCase();
+    if (upperText === "NOT_FILIPINO") {
+      throw new NotFilipinoFoodError("This does not look like Filipino food. Please scan a Filipino dish.");
+    }
+    if (upperText === "BAD_CAMERA_ANGLE") {
+      throw new NotFilipinoFoodError("Please retake the photo from above with the full plate visible.");
+    }
+    if (upperText === "BLURRY_IMAGE") {
+      throw new NotFilipinoFoodError("The image is blurry. Please retake the photo clearly.");
+    }
+    if (upperText === "UNKNOWN_FOOD") {
+      throw new NotFilipinoFoodError("Food could not be recognized. Try again.");
     }
 
     let mealData: any;
@@ -92,9 +110,9 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
 
     const meal: MealWithId = {
       id: uuidv4(),
-      name: mealData.name,
+      name: mealData.name, 
       calories: mealData.calories ?? 0,
-      protein: adjustedProtein, 
+      protein: adjustedProtein,
       carbs: mealData.carbs ?? 0,
       fats: mealData.fats ?? 0,
       fiber: mealData.fiber ?? 0,
@@ -107,14 +125,10 @@ export const recognizeMeal = async (imageUri: string): Promise<MealWithId> => {
     return meal;
 
   } catch (err) {
-    if (__DEV__) {
-      console.warn("OpenAI recognizeMeal handled error:", err);
-    }
+    if (__DEV__) console.warn("OpenAI recognizeMeal handled error:", err);
 
     if (err instanceof NotFilipinoFoodError) throw err;
 
-    throw new NotFilipinoFoodError(
-      "Scanned food could not be recognized as Filipino. Try again!"
-    );
+    throw new NotFilipinoFoodError("An unexpected error occurred while scanning. Try again.");
   }
 };

@@ -22,7 +22,7 @@ import SuccessModal from "@/app/components/modals/SuccessModal";
 import { predictDish as cnnPredictDish } from "@/lib/cnn/cnnModel";
 import { useNetworkStatus } from "@/lib/hooks/useNetworkStatus";
 import { saveMeal } from "@/lib/MealService";
-import { NotFilipinoFoodError, recognizeMeal } from "@/lib/openai";
+import { recognizeMeal } from "@/lib/openai";
 import { MealWithId } from "@/types/meal";
 
 export default function Scan() {
@@ -45,12 +45,16 @@ export default function Scan() {
 
     setError(null);
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return setError("Gallery permission is required!");
+    if (!permission.granted) {
+      setError("Gallery permission is required.");
+      return;
+    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       quality: 0.7,
     });
+
     if (!result.canceled && result.assets.length > 0) {
       const uri = result.assets[0].uri;
       setImageUri(uri);
@@ -63,12 +67,16 @@ export default function Scan() {
 
     setError(null);
     const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) return setError("Camera permission is required!");
+    if (!permission.granted) {
+      setError("Camera permission is required.");
+      return;
+    }
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       quality: 0.7,
     });
+
     if (!result.canceled && result.assets.length > 0) {
       const uri = result.assets[0].uri;
       setImageUri(uri);
@@ -85,18 +93,23 @@ export default function Scan() {
     setSuccess(null);
 
     try {
+      // Optional CNN step (kept for architecture completeness)
       const cnnResult = await cnnPredictDish(uri);
-      console.log("CNN prediction (fake):", cnnResult);
+      console.log("CNN prediction:", cnnResult);
 
       const detectedMeal = await recognizeMeal(uri);
-      const mealWithImage: MealWithId = { ...detectedMeal, image_url: uri };
-      setMeal(mealWithImage);
+      setMeal({ ...detectedMeal, image_url: uri });
+
     } catch (err) {
-      if (err instanceof NotFilipinoFoodError) {
+      if (__DEV__) {
+        console.warn("Scan error:", err);
+      }
+
+      // ✅ CORE FIX: trust error.message
+      if (err instanceof Error && err.message) {
         setError(err.message);
       } else {
-        if (__DEV__) console.error("Scan processImage error:", err);
-        setError("Failed to recognize meal. Please try again.");
+        setError("Failed to analyze image. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -155,7 +168,7 @@ export default function Scan() {
             >
               {loading ? (
                 <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                  <ActivityIndicator size="small" color="#fff" />
                   <Text style={styles.buttonText}>Analyzing...</Text>
                 </View>
               ) : (
@@ -164,13 +177,10 @@ export default function Scan() {
             </TouchableOpacity>
           </View>
 
-          {loading && <ActivityIndicator size="large" color="#FF5C00" style={{ marginTop: 20 }} />}
-
           {imageUri && !meal && !loading && (
             <Image
               source={{ uri: imageUri }}
               style={[styles.previewImage, { width: imageSize, height: imageSize }]}
-              resizeMode="cover"
             />
           )}
 
@@ -179,8 +189,7 @@ export default function Scan() {
               {meal.image_url && (
                 <Image
                   source={{ uri: meal.image_url }}
-                  style={[styles.capturedImage, { height: isSmallScreen ? 180 : 220 }]}
-                  resizeMode="cover"
+                  style={styles.capturedImage}
                 />
               )}
               <NutritionLabelCard meal={meal} />
@@ -193,7 +202,7 @@ export default function Scan() {
 
           <ErrorModal
             visible={!!error}
-            message={error ?? "Scanned food failed. Please try again!"}
+            message={error ?? ""}
             onClose={() => {
               setError(null);
               setMeal(null);
@@ -222,60 +231,38 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: 20,
     alignItems: "center",
-    width: "100%",
   },
   title: {
     fontWeight: "bold",
     marginBottom: 16,
     color: "#212121",
-    textAlign: "center",
   },
-  actions: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  actions: { alignItems: "center" },
   button: {
     width: "100%",
-    minWidth: 260,
     backgroundColor: "#FF5C00",
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
-    justifyContent: "center",
     marginBottom: 12,
   },
   disabledButton: { opacity: 0.7 },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  loadingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  previewImage: {
-    borderRadius: 16,
-    marginVertical: 20,
-    alignSelf: "center",
-  },
+  buttonText: { color: "#fff", fontWeight: "bold" },
+  loadingContainer: { flexDirection: "row", alignItems: "center" },
+  previewImage: { borderRadius: 16, marginVertical: 20 },
   capturedImage: {
     width: "100%",
+    height: 220,
     borderRadius: 12,
     marginBottom: 16,
   },
-  cardWrapper: {
-    alignItems: "center",
-    marginTop: 20,
-  },
+  cardWrapper: { marginTop: 20 },
   saveButton: {
     marginTop: 12,
-    width: "100%",
-    paddingVertical: 14,
     backgroundColor: "#FF5C00",
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
   },
-  saveButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+  saveButtonText: { color: "#fff", fontWeight: "bold" },
 });

@@ -1,3 +1,4 @@
+import AppHeader from "@/app/components/ui/AppHeader";
 import SplashScreen from "@/app/SplashScreen";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
@@ -81,7 +82,9 @@ export default function AppLayout() {
 
     const checkUser = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (isMounted) setUser(session?.user ?? null);
       } catch (err) {
         console.error("Failed to get session:", err);
@@ -92,9 +95,11 @@ export default function AppLayout() {
 
     checkUser();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (isMounted) setUser(session?.user ?? null);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (isMounted) setUser(session?.user ?? null);
+      }
+    );
 
     return () => {
       isMounted = false;
@@ -108,9 +113,7 @@ export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: "#FFD580" },
-        headerTintColor: "#0d0d0d",
+        header: ({ options }) => <AppHeader title={options.title as string} />, 
         tabBarStyle: { display: "none" },
       }}
       tabBar={(props) => <CustomTabBar {...props} />}

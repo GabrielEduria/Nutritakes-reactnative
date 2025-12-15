@@ -1,6 +1,7 @@
 import ErrorModal from "@/app/components/modals/ErrorModal";
 import SuccessModal from "@/app/components/modals/SuccessModal";
 import { supabase } from "@/lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -20,13 +21,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import BackgroundPattern from "../components/background/BackgroundPattern";
 
 const { width, height } = Dimensions.get("window");
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const scale = width / 375; // base scaling from iPhone 7 width
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +73,10 @@ export default function LoginScreen() {
   };
 
   return (
-    <LinearGradient colors={["#FFFDD0", "#FFD580", "#FFB347"]} style={styles.background}>
+    <LinearGradient
+      colors={["#FFFDD0", "#FFD580", "#FFB347"]}
+      style={styles.background}
+    >
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -100,15 +103,35 @@ export default function LoginScreen() {
                   onChangeText={setEmail}
                   autoCapitalize="none"
                   keyboardType="email-address"
+                  autoComplete="off"
+                  textContentType="none"
+                  importantForAutofill="no"
                 />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your password"
-                  placeholderTextColor="#777"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                />
+
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#777"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    textContentType="none"
+                    importantForAutofill="no"
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off" : "eye"}
+                      size={20}
+                      color="#333"
+                    />
+                  </TouchableOpacity>
+                </View>
 
                 <TouchableOpacity onPress={handleForgotPassword}>
                   <Text style={styles.forgotPassword}>Forgot password?</Text>
@@ -158,7 +181,9 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  background: { flex: 1 },
+  background: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     justifyContent: "center",
@@ -194,6 +219,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#808080",
     width: "100%",
+    color: "#000",
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#808080",
+    width: "100%",
+    marginBottom: height * 0.02,
+    paddingRight: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: height * 0.018,
+    paddingHorizontal: width * 0.04,
+    fontSize: width * 0.045,
+    color: "#000",
   },
   forgotPassword: {
     color: "#FF5C00",

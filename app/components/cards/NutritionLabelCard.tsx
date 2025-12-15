@@ -38,7 +38,6 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({
   const fontScale = isSmall ? 0.9 : 1;
 
   if (loading || !meal) {
-
     return (
       <View style={styles.container}>
         <LinearGradient
@@ -59,10 +58,7 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({
       <View style={styles.card}>
         <View style={styles.header}>
           <Text
-            style={[
-              styles.title,
-              { fontSize: 22 * fontScale },
-            ]}
+            style={[styles.title, { fontSize: 22 * fontScale }]}
             numberOfLines={1}
           >
             Nutrition Facts
@@ -85,12 +81,20 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({
 
         <View style={styles.row}>
           <Text
-            style={[styles.label, styles.caloriesLabel, { fontSize: 18 * fontScale }]}
+            style={[
+              styles.label,
+              styles.caloriesLabel,
+              { fontSize: 18 * fontScale },
+            ]}
           >
             Calories
           </Text>
           <Text
-            style={[styles.value, styles.caloriesValue, { fontSize: 18 * fontScale }]}
+            style={[
+              styles.value,
+              styles.caloriesValue,
+              { fontSize: 18 * fontScale },
+            ]}
           >
             {meal.calories} kcal
           </Text>
@@ -120,6 +124,12 @@ const NutritionLabelCard: React.FC<NutritionLabelCardProps> = ({
             </View>
           </>
         )}
+
+        <View style={styles.disclaimerContainer}>
+          <Text style={[styles.disclaimer, { fontSize: 11 * fontScale }]}>
+              DISCLAIMER: Nutritional values shown may vary and is not fully accurate, use at your own risk.       
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -228,6 +238,17 @@ const styles = StyleSheet.create({
   description: {
     textAlign: "left",
     color: "#333",
+  },
+  disclaimerContainer: {
+    marginTop: 10,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  disclaimer: {
+    color: "#777",
+    textAlign: "center",
+    fontStyle: "italic",
   },
 });
 

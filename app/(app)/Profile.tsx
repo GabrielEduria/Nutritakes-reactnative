@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { supabase } from "@/lib/supabase";
 import { MealWithId } from "@/types/meal";
 import { LinearGradient } from "expo-linear-gradient";
@@ -34,12 +35,12 @@ export default function ProfileScreen() {
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedMeal, setSelectedMeal] = useState<MealWithId | null>(null);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const { width, height } = useWindowDimensions();
 
   const isSmallScreen = width < 380;
   const containerWidth = isSmallScreen ? "90%" : "85%";
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const modalImageHeight = isSmallScreen ? 180 : 220;
 
   useEffect(() => {

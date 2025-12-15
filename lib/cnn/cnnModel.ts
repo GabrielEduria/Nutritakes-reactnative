@@ -3,7 +3,7 @@ import { MealWithId } from '@/types/meal';
 export async function predictDish(image: string): Promise<MealWithId> {
 
   return {
-    id: 'cnn-fake-' + Date.now(),
+    id: 'cnn-' + Date.now(),
     name: "Adobo",
     calories: 350,
     protein: 20,
